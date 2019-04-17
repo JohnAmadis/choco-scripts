@@ -91,7 +91,7 @@ function getMac()
 {
     local ifname=$1
     ifconfig $ifname 2>&1 | grep HWaddr | sed 's/.*HWaddr \(.*\)$/\1/g' 
-    ifconfig eth0 2>&1 | grep ether | sed 's/.*ether \([a-Z0-9\:]*\).*$/\1/g'
+    ifconfig eth0 2>&1 | grep ether | sed 's/.*ether \([a-z0-9\:]*\).*$/\1/g'
 }
 
 #
