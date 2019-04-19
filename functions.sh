@@ -34,6 +34,15 @@ function getPasswordBcryptEncrypted()
 }
 
 #
+#   Checking if internet is UP
+#
+function isInternetAvailable()
+{
+    ping -c 4 google.com 2>&1 > /dev/null
+    return $?
+}
+
+#
 #   Joins array by delimiter
 #
 function joinBy 
