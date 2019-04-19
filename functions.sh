@@ -54,6 +54,20 @@ function waitForInternet()
 }
 
 #
+#   Compares 2 files
+#
+function areFilesIdentical()
+{
+    if [ ! -e "$1" ] && [ ! -e "$2" ]
+    then 
+        return 0
+    else
+        sudo cmp --silent "$1" "$2"
+        return $? 
+    fi
+}
+
+#
 #   Joins array by delimiter
 #
 function joinBy 
