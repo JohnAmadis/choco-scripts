@@ -43,6 +43,17 @@ function isInternetAvailable()
 }
 
 #
+#   The function waits for the internet 
+#
+function waitForInternet()
+{
+    while ! isInternetAvailable
+    do 
+        sleep 10
+    done
+}
+
+#
 #   Joins array by delimiter
 #
 function joinBy 
@@ -2807,7 +2818,7 @@ __addSupportedArgumentType "regex" "This type of argument allows for passing str
 
 addRequiredTool "realpath" "The tool is used for normalization of paths. If it will be not installed, \nthe paths can be ugly - for example they can have double slashes" "FALSE" "sudo apt-get install realpath -y"
 addRequiredTool "wget" "GNU Wget is a free software package for retrieving files using HTTP, HTTPS, FTP and FTPS the most widely-used Internet protocols. It is a non-interactive commandline tool, so it may easily be called from scripts, cron jobs, terminals without X-Windows support, etc. It is required by a script for pulling of files" "FALSE" "sudo apt-get update && sudo apt-get install -y wget"
-addRequiredTool "unzip" "unzip will list, test, or extract files from a ZIP archive, commonly found on MS-DOS systems.\nIt is used by the script to extract zip archives" "FALSE" "sudo apt-get install -y unzup"
+addRequiredTool "unzip" "unzip will list, test, or extract files from a ZIP archive, commonly found on MS-DOS systems.\nIt is used by the script to extract zip archives" "FALSE" "sudo apt-get install -y unzip"
 addRequiredTool "sudo" "A command for bash allowing for performing of commands with root privileges without loging as root. It is used by script for installation of tools, creation of paths etc. This is the only tool you have to install as root" "TRUE" "apt-get install -y sudo"
 addRequiredTool "htpasswd" "A tool required for bcrypt password encryption" "FALSE" "sudo apt-get install -y apache2-utils"
 addRequiredTool "php" "Engine for PHP scripts." "FALSE" "sudo apt-get install -y php"
