@@ -1496,6 +1496,23 @@ function validateArgumentValue()
             printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!"
             return 1
         fi
+    elif isArgumentType "$ARGUMENT" "existing_files"
+    then 
+        EXISTING_FILES="$(splitStringByDelimited "$VALUE" ":")"
+        if [ ${#EXISTING_FILES[@]} -eq 0 ]
+        then 
+            printError "Array with existing files given for '$ARGUMENT' cannot be empty!"
+            return 1
+        fi
+        for file in ${EXISTING_FILES[*]}
+        do 
+            if ! fileExists "$file"
+            then 
+                printError "The file: '$file' given for '$ARGUMENT' does not exist!"
+                return 1
+            fi
+        done
+        return 0
     elif isArgumentType "$ARGUMENT" "file"
     then
         PARENT_DIR=$(dirname "$VALUE")
@@ -2717,7 +2734,12 @@ function setArgumentValue()
     __ARGUMENT_VALUE_SET[$ARGUMENT]="TRUE"
     local ESCAPED_1=$(replaceInString "$VALUE" "<" "\\\\<")
     local ESCAPED_2=$(replaceInString "$ESCAPED_1" ">" "\\\\>")
-    eval $ARGUMENT="'$ESCAPED_2'"
+    if isArgumentType "$ARGUMENT" "existing_files"
+    then 
+        eval $ARGUMENT="'$(splitStringByDelimited "$ESCAPED_2" ":")'"
+    else 
+        eval $ARGUMENT="'$ESCAPED_2'"
+    fi
 }
 
 #
@@ -2829,6 +2851,7 @@ __addSupportedArgumentType "not_empty_string" "This type of argument allows for 
 __addSupportedArgumentType "string" "This type of argument allows for passing strings and the string can be empty" "some string but it can be also empty"
 __addSupportedArgumentType "password" "This type of argument allows for passing strings that can be empty. Moreover they will be printed in the configuration as stars" "***********"
 __addSupportedArgumentType "regex" "This type of argument allows for passing strings that can only store a string that matches the regular expression" "2018-09-12"
+__addSupportedArgumentType "existing_files" "This argument type allows for passing list of existing paths separated by ':'" "/some/path:/another/path"
 
 addRequiredTool "realpath" "The tool is used for normalization of paths. If it will be not installed, \nthe paths can be ugly - for example they can have double slashes" "FALSE" "sudo apt-get install realpath -y"
 addRequiredTool "wget" "GNU Wget is a free software package for retrieving files using HTTP, HTTPS, FTP and FTPS the most widely-used Internet protocols. It is a non-interactive commandline tool, so it may easily be called from scripts, cron jobs, terminals without X-Windows support, etc. It is required by a script for pulling of files" "FALSE" "sudo apt-get update && sudo apt-get install -y wget"
