@@ -1,0 +1,2 @@
+PROJECT_NAME=chocotechnologies
+REPOSITORY_NAME=scripts
