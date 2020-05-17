@@ -19,9 +19,34 @@ declare -A __REQUIRED_TOOLS_DESCRIPTIONS
 declare -a __REQUIRED_TOOLS
 declare -a __REQUIRED_TOOLS_MANDATORY
 declare -A __REQUIRED_TOOLS_INSTALLATION_COMMAND
+declare -A __SUPPORTED_SIZE_UNITS
 
+__SUPPORTED_SIZE_UNITS[B]=1
+__SUPPORTED_SIZE_UNITS[KB]=124
+__SUPPORTED_SIZE_UNITS[MB]=$((1024*1024))
+__SUPPORTED_SIZE_UNITS[GB]=$((1024*1024*1024))
+__SUPPORTED_SIZE_UNITS[TB]=$((1024*1024*1024*1024))
 __SCRIPT_NAME=""
 __SCRIPT_DESCRIPTION=""
+
+#
+#   Devides 2 floats
+#
+function devideAsFloat()
+{
+    local A=$1
+    local B=$2
+    echo "$A $B" | awk '{printf "%.2f", $1/$2}'
+}
+
+#
+#   Says something 
+#
+function say_loud()
+{
+    local MESSAGE=$1
+    spd-say "$MESSAGE"
+}
 
 #
 #   Encrypts a password to the bcrypt code
@@ -31,6 +56,15 @@ function getPasswordBcryptEncrypted()
     local PASSWORD=$1
     setToolMandatory "php" 
     php -r "print_r(password_hash('$PASSWORD', PASSWORD_BCRYPT));"
+}
+
+#
+#   Encrypts password in SHA256
+#
+function getPasswordSha256Encrypted()
+{
+    local PASSWORD=$1
+    /bin/echo -n "$PASSWORD" | sha256sum | awk '{print $1}'
 }
 
 #
@@ -67,6 +101,27 @@ function areFilesIdentical()
     fi
 }
 
+
+#
+#   Checks if the file contains at least one of the strings
+#
+function fileContains()
+{
+    local FILE=$1
+    local STRINGS=${@:2}
+        
+    for string in ${STRINGS[@]}
+    do
+        cat "$FILE" | grep "$string" 2>&1 > /dev/null
+        RESULT=$?
+        if [ $RESULT -eq 0 ]
+        then 
+            return 0
+        fi
+    done
+    return 1
+}
+
 #
 #   Joins array by delimiter
 #
@@ -91,11 +146,87 @@ function isRoot()
 }
 
 #
+#   Returns units from a size
+#
+function getUnitFromSizeString()
+{
+    local SIZE=$1
+    echo $SIZE | sed -r 's/[0-9]+\s*(\w*)/\1/g'
+}
+
+#
+#   Returns a size from a string with size (like '100GB')
+#
+function getSizeFromSizeString()
+{
+    local SIZE_STRING=$1
+    echo $SIZE_STRING | sed -r 's/([0-9]+)\s*\w*/\1/g'
+}
+
+#
+#   Returns supported size units
+#
+function getSupportedSizeUnits()
+{
+    for key in ${!__SUPPORTED_SIZE_UNITS[@]}
+    do
+        echo "$key "
+    done 
+}
+
+#
+#   Returns supported size units in increasing order
+#
+function getSupportedSizeUnitsInIncreasingOrder()
+{
+    for UNIT in ${!__SUPPORTED_SIZE_UNITS[@]} 
+    do      
+        echo $UNIT ' - ' ${__SUPPORTED_SIZE_UNITS["$UNIT"]}
+    done | sort -rn -k3 | awk '{print $1}'
+}
+
+#
+#   Returns a list of supported size units joined by a comma
+#
+function getSupportedSizeUnitsString()
+{
+    joinBy "," $(getSupportedSizeUnits)
+}
+
+#
+#   Returns number of bytes in the given size unit or 0 if not found
+#   
+function getSizeUnitMultiplier()
+{
+    local UNIT=$1
+    
+    if isStringEmpty "$UNIT"
+    then 
+        return "1"
+    elif isSizeUnitSupported "$UNIT"
+    then 
+        echo ${__SUPPORTED_SIZE_UNITS[$UNIT]}
+    else 
+        echo "0"
+    fi
+}
+
+#
+#   Returns size of file in bytes
+#
+function getFileSizeInBytes()
+{
+   local FILE_PATH=$1
+   stat --printf="%s" "$FILE_PATH"
+}
+
+#
 #   Returns size of file
 #
 function getFileSize()
 {
     local FILE_PATH=$1
+
     FILE_SIZE_B=$(stat -c%s "$FILE_PATH")
     let FILE_SIZE_kB=$FILE_SIZE_B/1024
     let FILE_SIZE_MB=$FILE_SIZE_kB/1024
@@ -401,7 +532,7 @@ function waitForUnmount()
     busy=true
     while $busy
     do
-        if mountpoint-q "$P"
+        if mountpoint -q "$P"
         then 
             sudo umount "$P" 2>/dev/null
             if [ $? -eq 0 ]
@@ -414,6 +545,179 @@ function waitForUnmount()
             busy=false
         fi
     done
+}
+
+#
+#   Reads physical sector size
+#
+function getPhysicalSectorSize()
+{
+    local DEVICE=$1
+    
+    sudo blockdev --getss $DEVICE
+}
+
+#
+#   Returns size of device
+#
+function getDeviceSize()
+{
+    local DEVICE=$1
+    
+    sudo blockdev --getsize64 $DEVICE
+}
+
+#
+#   Returns size of partition
+#
+function getPartitionSize()
+{
+    local DEVICE=$1
+    
+    sudo blockdev --getsize64 $DEVICE
+}
+
+#
+#   Returns a partition offset in bytes
+#
+function getPartitionStart()
+{
+    local DEVICE=$1
+    local PARTITION_INDEX=$2
+    local array
+    
+    setToolMandatory "parted"
+    
+    IFS=" " read -r -a array <<< $(sudo parted $DEVICE unit B print | grep -A $2 Number | awk '{print $2}')
+    local START=${array[$PARTITION_INDEX]}
+    echo ${START%B}
+}
+
+#
+#   Returns list of reserved loop devices
+#
+function getLoopDevices()
+{
+    sudo losetup -l | grep -E "/dev/loop" | awk '{print $1}'
+}
+
+#
+#   Prepares a list of mounted partitiion devices for the given device
+#
+function getMountedSubdevices()
+{
+    local DEVICE=$1
+    sudo mount -l | grep $DEVICE | awk '{print $1}'
+}
+
+#
+#   Cleans all loop mounts and loop devices
+#
+function cleanLoopDevices()
+{
+    local LOOP_DEVICES=$(getLoopDevices)
+    for LOOP_DEVICE in ${LOOP_DEVICES[@]}
+    do
+        printInfo "Found device '$LOOP_DEVICE' - it will be cleaned\n"
+        local MOUNTED_SUBDEVICES=$(getMountedSubdevices "$LOOP_DEVICE")
+        for SUBDEVICE in ${MOUNTED_SUBDEVICES[@]}
+        do
+            doCommandAsStep "Unmounting of subdevice '$SUBDEVICE'" sudo umount -l $SUBDEVICE
+        done
+        doCommandAsStep "Removing of device $LOOP_DEVICE" sudo losetup -d $LOOP_DEVICE
+    done
+}
+
+#
+#   Resizes an image and extends a partition
+#
+function resizeImage()
+{
+    local IMAGE_PATH=$1
+    local PARTITION_LABEL_TO_INCREASE=$2
+    local MOUNT_PATH=$3
+    local NEW_IMAGE_SIZE=$4
+    
+    local CURRENT_IMAGE_SIZE=$(getFileSizeInBytes "$IMAGE_PATH")
+    
+    if [ "$NEW_IMAGE_SIZE" -eq "$CURRENT_IMAGE_SIZE" ]
+    then 
+        printInfo "Current image size ($CURRENT_IMAGE_SIZE B) is equal to the new one ($NEW_IMAGE_SIZE)- resize of the image '$IMAGE_PATH' is not required\n"
+        return 0
+    fi 
+    
+    if [ "$NEW_IMAGE_SIZE" -lt "$CURRENT_IMAGE_SIZE" ]
+    then 
+        printError "Resizing of image '$IMAGE_PATH' cannot be done - the script does not support decreasing of images yet. The current image size: $CURRENT_IMAGE_SIZE B, the new size: $NEW_IMAGE_SIZE"
+    fi
+    
+    local SIZE_TO_APPEND=$(($NEW_IMAGE_SIZE-$CURRENT_IMAGE_SIZE))
+    
+    printInfo "Resizing of image '$IMAGE_PATH' from '$(toSizeString $CURRENT_IMAGE_SIZE)' to '$(toSizeString $NEW_IMAGE_SIZE)'\n"
+    
+    local BLOCKS_COUNT=$(($SIZE_TO_APPEND / 1048576))
+    doCommandAsStepWithSpinner "Appending of '$(toSizeString $SIZE_TO_APPEND)' (${BLOCKS_COUNT}MB) to the image $IMAGE_PATH" sudo dd if=/dev/zero bs=1MiB "of=$IMAGE_PATH" conv=notrunc oflag=append count=$BLOCKS_COUNT
+    
+    setToolMandatory "parted"
+    
+    local LOOP_DEVICE_PATH=$(getLoopDeviceForImage "$IMAGE_PATH")
+    if isStringEmpty "$LOOP_DEVICE_PATH"
+    then 
+        printError "Cannot create loop device for image: '$IMAGE_PATH'"
+    fi
+    
+    if isMountedOn "$LOOP_DEVICE_PATH" "$MOUNT_PATH"
+    then 
+        umountImage "$IMAGE_PATH"
+    fi
+    
+    local PARTITION_INDEX=1
+    local PARTITION_FOUND=false
+    for PARTITION in $(getPartitionsInDevice "$LOOP_DEVICE_PATH")
+    do
+        if [ "$PARTITION" = "${LOOP_DEVICE_PATH}p*" ]; 
+        then 
+            PARTITION="$LOOP_DEVICE_PATH"
+        fi
+        
+        local PARTITION_SIZE=$(getPartitionSize "$PARTITION")
+        local PARTITION_LABEL=$(getPartitionLabel "$PARTITION")
+        printInfo "Found partition: '$PARTITION' with label: '$PARTITION_LABEL', index: $PARTITION_INDEX and size: $(toSizeString $PARTITION_SIZE))\n"
+        if isStringEqual "$PARTITION_LABEL" "$PARTITION_LABEL_TO_INCREASE"
+        then 
+            if isMounted "$PARTITION"
+            then 
+                if ! doCommandAsStep "Partition '$PARTITION' is already mounted - unmounting" sudo umount $PARTITION
+                then 
+                    if ! printQuestion "We could not unmount device '$PARTITION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of partition on '$PARTITION' with force" sudo umount -l "$PARTITION"
+                    then 
+                        printError "Cannot unmount device: '$PARTITION'. If you dont need it, please just unmount and it and remove it then"
+                    fi 
+                fi
+            fi
+            local NEW_PARTITION_SIZE=$(($PARTITION_SIZE+$SIZE_TO_APPEND))
+            local PARTITION_START=$(getPartitionStart "$LOOP_DEVICE_PATH" $PARTITION_INDEX)
+            local PARTITION_END=$(($PARTITION_START+$NEW_PARTITION_SIZE-4))
+            doCommandAsStep "Resizing of partitiion '$PARTITION_LABEL' to $(toSizeString $NEW_PARTITION_SIZE) Bytes. Start: $PARTITION_START, End: $PARTITION_END" sudo parted -s $LOOP_DEVICE_PATH unit B resizepart $PARTITION_INDEX $PARTITION_END
+            PARTITION_FOUND=true
+            printInfo "New size of partition $PARTITION_LABEL is: $(toSizeString $(getPartitionSize "$PARTITION"))\n"
+            if [ ! $(getPartitionSize "$PARTITION") -eq $NEW_PARTITION_SIZE ]
+            then 
+                SIZE_AFTER_CHANGE=$(getPartitionSize $PARTITION)
+                removeLoopDeviceForImage "$IMAGE_PATH"
+                printError "Partition size is not set properly! Expected: $NEW_PARTITION_SIZE, actual: $SIZE_AFTER_CHANGE"
+            fi
+        fi
+        
+        PARTITION_INDEX=$(($PARTITION_INDEX+1))
+    done
+    
+    removeLoopDeviceForImage "$IMAGE_PATH"
+    
+    if ! $PARTITION_FOUND
+    then 
+        printError "No such partitiion: $PARTITION_LABEL_TO_INCREASE"
+    fi
 }
 
 #
@@ -474,6 +778,11 @@ function mountImage()
         then 
             printError "Cannot mount partition: $PARTITION"
         fi
+        
+        if ! isMountedOn "$PARTITION" "$DESTINATION"
+        then 
+            printError "Mounting of $PARTITION in $DESTINATION did not go well..."
+        fi
     done
     return 0
 }
@@ -508,7 +817,7 @@ function umountImage()
         if isMountedOn "$PARTITION" "$DESTINATION"
         then
             doCommandAsStepWithSpinner "Waiting with umounting untill not busy" waitForUnmount "$DESTINATION"
-            if ! doCommandAsStep "Unmounting of partition '$PARTITION' from '$DESTINATION'" sudo umount "$DESTINATION"
+            if ! doCommandAsStep "Unmounting of partition '$PARTITION' from '$DESTINATION'" sudo umount "$DESTINATION" && isMountedOn "$PARTITION" "$DESTINATION"
             then 
                 if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
                 then 
@@ -568,6 +877,18 @@ function copyFile()
 }
 
 #
+#   Copying directory to the selected destination
+#
+function copyDirectory()
+{
+    local INPUT_DIR=$1
+    local OUTPUT_DIR=$2
+    
+    createDirectory "$OUTPUT_DIR"
+    doCommandAsStepWithSpinner "Copying directory from '$INPUT_DIR' to '$OUTPUT_DIR'" cp -r "$INPUT_DIR" "$OUTPUT_DIR"
+}
+
+#
 #   Copying file to the selected destination
 #
 function copyFileAsRoot()
@@ -578,6 +899,18 @@ function copyFileAsRoot()
     createDirectory "$(dirname "$OUTPUT_FILE")"
     doCommandAsStepWithSpinner "Copying file from '$INPUT_FILE' to '$OUTPUT_FILE' as root" sudo cp "$INPUT_FILE" "$OUTPUT_FILE"
     return $?
+}
+
+#
+#   Copying directory to the selected destination as root
+#
+function copyDirectoryAsRoot()
+{
+    local INPUT_DIR=$1
+    local OUTPUT_DIR=$2
+    
+    createDirectory "$OUTPUT_DIR"
+    doCommandAsStepWithSpinner "Copying directory from '$INPUT_DIR' to '$OUTPUT_DIR' as root" sudo cp -r "$INPUT_DIR" "$OUTPUT_DIR"
 }
 
 #
@@ -774,6 +1107,15 @@ function toUppercase()
 }
 
 #
+#   Converts a string to uppercase
+#
+function toLowercase()
+{
+    local STR=$1
+    echo $STR | awk '{print tolower($0)}'
+}
+
+#
 #   Extracts argument from dependency 
 #
 function getArgumentFromDependency()
@@ -885,7 +1227,7 @@ function replaceInString()
 {
     local STRING="$1"
     local IN="$2"
-    local OUT="$3" 
+    local OUT=$(echo $3 | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')
     echo "$STRING" | sed "s/$IN/$OUT/g"
 }
 
@@ -930,6 +1272,24 @@ function isStringEqual()
     fi
 }
 
+# 
+#   Checks if the given string is available in the given array
+#
+function isInArray()
+{
+    local KEY=$1
+    local ARRAY=$2
+    
+    for v in ${ARRAY[*]}
+    do
+        if isStringEqual "$v" "$KEY"
+        then 
+            return 0
+        fi
+    done
+    return 1
+}
+
 #
 #   Checks if the string is empty
 #
@@ -943,6 +1303,57 @@ function isStringEmpty()
     else 
         return 1
     fi
+}
+
+#
+#   Returns true if the unit is supported
+#
+function isSizeUnitSupported()
+{
+    local UNIT=$1
+    local SUPPORTED_UNITS=$(getSupportedSizeUnits)
+    
+    if isInArray "$UNIT" "${SUPPORTED_UNITS[@]}"
+    then 
+        return 0
+    else
+        return 1
+    fi
+}
+
+#
+#   Converts the string to number of bytes
+#
+function toBytes()
+{
+    local SIZE_STRING=$1
+    local SIZE=$(getSizeFromSizeString "$SIZE_STRING")
+    local UNIT=$(getUnitFromSizeString "$SIZE_STRING")
+    local MULTIPLIER=$(getSizeUnitMultiplier "$UNIT")
+    echo $(($SIZE*$MULTIPLIER))
+}
+
+#
+#   Converts size in bytes to size string 
+#
+function toSizeString()
+{
+    local SIZE_B=$1
+    
+    local SUPPORTED_UNITS=$(getSupportedSizeUnitsInIncreasingOrder)
+    
+    for UNIT in ${SUPPORTED_UNITS[@]}
+    do 
+        local MULTIPLIER=$(getSizeUnitMultiplier "$UNIT")
+        let SIZE=$SIZE_B/$MULTIPLIER
+        if [ $SIZE -gt 0 ]
+        then 
+            echo "$(devideAsFloat $SIZE_B $MULTIPLIER)$UNIT"
+            return 0
+        fi
+    done
+    
+    echo "${SIZE_B} B"
 }
 
 #
@@ -1002,24 +1413,6 @@ function getFirstElementOfArray()
         echo "$element"
         return
     done
-}
-
-# 
-#   Checks if the given string is available in the given array
-#
-function isInArray()
-{
-    local KEY=$1
-    local ARRAY=$2
-    
-    for v in ${ARRAY[*]}
-    do
-        if isStringEqual "$v" "$KEY"
-        then 
-            return 0
-        fi
-    done
-    return 1
 }
 
 #
@@ -1391,6 +1784,25 @@ function validateArgumentValue()
             printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be an integer!"
             return 1
         fi
+    elif isArgumentType "$ARGUMENT" "size"
+    then 
+        REGULAR_EXPRESSION="[0-9]+\s*\w*"
+        UNIT=$(getUnitFromSizeString "$VALUE")
+        SIZE=$(getSizeFromSizeString "$VALUE")
+        if [[ ! "$VALUE" =~ ^$REGULAR_EXPRESSION ]]
+        then 
+            printError "The given value: '$VALUE' is not valid for argument $(getArgumentName $ARGUMENT) - it has to be positive integer with units like: 100GB"
+            return 1
+        elif ! isSizeUnitSupported "$UNIT"
+        then 
+            printError "The given size unit: '$UNIT' is not supported. The supported ones: $(getSupportedSizeUnitsString)" 
+            return 1
+        elif [[ $(toBytes "$VALUE") -lt 0 ]]
+        then 
+            return 1
+        else 
+            return 0
+        fi
     elif isArgumentType "$ARGUMENT" "bool"
     then
         if isStringEqual "$VALUE" "true" || isStringEqual "$VALUE" "false" || isStringEmpty "$VALUE"
@@ -1421,6 +1833,15 @@ function validateArgumentValue()
             return 0
         else 
             printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) does not match regular expression: '$REGULAR_EXPRESSION'"
+        fi 
+    elif isArgumentType "$ARGUMENT" "ip"
+    then
+        REGULAR_EXPRESSION="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+        if [[ "$VALUE" =~ ^$REGULAR_EXPRESSION$ ]] 
+        then 
+            return 0
+        else 
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not valid IP! Only IPv4 is supported in range: 0.0.0.0-255.255.255.255"
         fi 
     elif isArgumentType "$ARGUMENT" "new_directory"
     then
@@ -1553,6 +1974,7 @@ function printError()
     printf "\033[31;1m[ ERROR ] $MESSAGE\n\033[0m"
     if isStringEmpty "$FINISH_SCRIPT" || isStringEqual "$FINISH_SCRIPT" "TRUE"
     then 
+        say_loud "My master, we have a problem here: $MESSAGE"
         exit 1
     fi
 }
@@ -1799,6 +2221,9 @@ function printConfiguration()
         if isArgumentType "$arg" "password"
         then
             echo "          $arg: ************"
+        elif isArgumentType "$arg" "size"
+        then
+            echo "          $arg: ${!arg} ($(toBytes ${!arg}) Bytes)"
         else
             echo "          $arg: ${!arg} "
         fi
@@ -1914,7 +2339,40 @@ function readFromJson()
 {
     local JSON=$1
     local PARAM_NAME=$2
+    setToolMandatory "jq"
     echo "$JSON" | jq -r ".$PARAM_NAME"
+}
+
+#
+#   Reads list of keys available in the given json
+#
+function readKeysFromJson()
+{
+    local JSON=$1
+    setToolMandatory "jq"
+    echo "$JSON" | jq -r 'keys[] as $k | "\($k)"'
+}
+
+#
+#   Reads array with the given name from the json
+#   If you want to read the array and for example loop over the lines
+#   you have to use:
+#       IFS=$'\n'
+#   It sets the 'new line' character as the only separator
+#
+function readArrayFromJson()
+{
+    local JSON=$1
+    local PARAM_NAME=$2
+    
+    setToolMandatory "jq"
+    
+    if ! isStringEmpty "$PARAM_NAME"
+    then 
+        echo "$JSON" | jq -r ".\"$PARAM_NAME\"" | jq -r '.[]'
+    else 
+        echo "$JSON" | jq -r '.[]' 
+    fi
 }
 
 #
@@ -2515,6 +2973,7 @@ function printUsage()
     printf "  To see the help please use: \n\t\033[33;1m$__SCRIPT_NAME --help"
     printf "\033[0m\n"
     printf "  Usage: \n\t\033[33;1m$__SCRIPT_NAME "
+    
     for ARGUMENT in ${__ARGUMENTS[*]}
     do
         if isArgumentOptional "$ARGUMENT"
@@ -2852,6 +3311,8 @@ __addSupportedArgumentType "string" "This type of argument allows for passing st
 __addSupportedArgumentType "password" "This type of argument allows for passing strings that can be empty. Moreover they will be printed in the configuration as stars" "***********"
 __addSupportedArgumentType "regex" "This type of argument allows for passing strings that can only store a string that matches the regular expression" "2018-09-12"
 __addSupportedArgumentType "existing_files" "This argument type allows for passing list of existing paths separated by ':'" "/some/path:/another/path"
+__addSupportedArgumentType "size" "A type allows for storing of size. If it is given without unit, the default unit are Bytes. The supported units: $(getSupportedSizeUnitsString)" "40MB"
+__addSupportedArgumentType "ip" "A type allows only for storing of IPv4. Valid IPs are in range 0.0.0.0-255.255.255.255" "192.168.1.12"
 
 addRequiredTool "realpath" "The tool is used for normalization of paths. If it will be not installed, \nthe paths can be ugly - for example they can have double slashes" "FALSE" "sudo apt-get install realpath -y"
 addRequiredTool "wget" "GNU Wget is a free software package for retrieving files using HTTP, HTTPS, FTP and FTPS the most widely-used Internet protocols. It is a non-interactive commandline tool, so it may easily be called from scripts, cron jobs, terminals without X-Windows support, etc. It is required by a script for pulling of files" "FALSE" "sudo apt-get update && sudo apt-get install -y wget"
@@ -2859,6 +3320,8 @@ addRequiredTool "unzip" "unzip will list, test, or extract files from a ZIP arch
 addRequiredTool "sudo" "A command for bash allowing for performing of commands with root privileges without loging as root. It is used by script for installation of tools, creation of paths etc. This is the only tool you have to install as root" "TRUE" "apt-get install -y sudo"
 addRequiredTool "htpasswd" "A tool required for bcrypt password encryption" "FALSE" "sudo apt-get install -y apache2-utils"
 addRequiredTool "php" "Engine for PHP scripts." "FALSE" "sudo apt-get install -y php"
+addRequiredTool "parted" "Useful tool for managing partitions" "FALSE" "sudo apt-get install -y parted"
+addRequiredTool "jq" "A tool for parsing of JSON files" "FALSE" "sudo apt-get install -y jq"
 
 addCommandLineOptionalArgument __TOOL_TO_INSTALL "--install-required-tool" "options" "You can use this option to install tool required by this script" "realpath" "${__REQUIRED_TOOLS[*]}"
 addCommandLineOptionalArgument __INSTALL_ALL_REQUIRED "--install-all-required" "bool" "You can use this argument to install all tools required by the script" "FALSE"
