@@ -52,26 +52,6 @@ function prepareScript()
 }
 
 #
-#   Prepares .gitignore file
-#
-function addToGitIgnored()
-{
-    local stringToIgnore=$1
-    
-    if ! fileExists "$GIT_IGNORE_FILE"
-    then 
-        printInfo "Creating file $GIT_IGNORE_FILE\n"
-        touch "$GIT_IGNORE_FILE"
-    fi
-    
-    if ! fileContains "$GIT_IGNORE_FILE" "$stringToIgnore"
-    then 
-        printInfo "Adding $stringToIgnore to $GIT_IGNORE_FILE\n"
-        echo "$stringToIgnore" >> $GIT_IGNORE_FILE
-    fi
-}
-
-#
 #   Sends request for issue data
 #
 function requestIssueData()
@@ -91,7 +71,7 @@ function requestIssueData()
     
     printInfo "Saving issue data to: $ISSUE_DATA_FILE\n"
     echo "$ISSUE_DATA" > $ISSUE_DATA_FILE 
-    addToGitIgnored "$ISSUE_DATA_FILE"
+    addToGitIgnored "$ISSUE_DATA_FILE" "$GIT_IGNORE_FILE"
 }
 
 #
@@ -113,7 +93,7 @@ function requestUserData()
     
     printInfo "Saving user data to: $USER_DATA_FILE\n"
     echo "$USER_DATA" > $USER_DATA_FILE
-    addToGitIgnored "$USER_DATA_FILE"
+    addToGitIgnored "$USER_DATA_FILE" "$GIT_IGNORE_FILE"
     
     printInfo "Requesting user email ...\n"
     EMAIL_DATA=$(curl -X GET -u "$USER_STRING" -s "$BITBUCKET_BASE_URL/$BITBUCKET_EMAIL_API" )
@@ -123,7 +103,7 @@ function requestUserData()
     fi
     printInfo "Saving email data to file $EMAIL_DATA_FILE\n"
     echo "$EMAIL_DATA" > $EMAIL_DATA_FILE
-    addToGitIgnored "$EMAIL_DATA_FILE"
+    addToGitIgnored "$EMAIL_DATA_FILE" "$GIT_IGNORE_FILE"
 }
 
 #

@@ -2610,6 +2610,32 @@ function openDataInBrowser()
 }
 
 #
+#   Adds the string to the .gitignore file
+#
+function addToGitIgnored()
+{
+    local stringToIgnore=$1
+    local gitIgnoreFilePath=$2
+    
+    if isStringEmpty "$gitIgnoreFilePath"
+    then 
+        gitIgnoreFilePath=".gitignore"
+    fi
+    
+    if ! fileExists "$gitIgnoreFilePath"
+    then 
+        printInfo "Creating file $gitIgnoreFilePath\n"
+        touch "$gitIgnoreFilePath"
+    fi
+    
+    if ! fileContains "$gitIgnoreFilePath" "$stringToIgnore"
+    then 
+        printInfo "Adding $stringToIgnore to $gitIgnoreFilePath\n"
+        echo "$stringToIgnore" >> $gitIgnoreFilePath
+    fi
+}
+
+#
 #   Defines new script
 #
 function defineScript()
