@@ -1,0 +1,23 @@
+pipelines:
+    tags:
+        V.*:
+            - step:
+                name: Building of an image
+                trigger: automatic
+                script:
+                    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+                    - ./build.sh --version="$BITBUCKET_TAG" --target=image
+            - step:
+                name: Bulding of package
+                image: chocotechnologies/scripts:builder
+                trigger: automatic
+                script:
+                    - ./build.sh --url="$PUBLISH_URL" --version="$BITBUCKET_TAG" --target=package
+            - step:
+                name: Building of builder image
+                trigger: manual
+                script:
+                    - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+                    - ./build.sh --version="$BITBUCKET_TAG" --target=builder
+options:
+    docker: true
