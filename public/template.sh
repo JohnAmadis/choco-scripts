@@ -9,17 +9,33 @@
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 #
-#   Path to the choco-scripts directory. By default it assumes the scripts 
-#   are in the subdirectory 
-#   You can change this path to your needs, but I suggest you to use '$THIS_DIR'
-#   variable as it always contains absolute path to the directory of your script
+#   Path to the configuration file
 #
-CHOCO_SCRIPTS_DIR=$THIS_DIR/choco-scripts
+CONFIGURATION_FILE_PATH=~/.choco-scripts.cfg
+
+#
+#   Verification of the choco scripts installation
+#
+if [ "$CHOCO_SCRIPTS_VERSION" == "" ] 
+then 
+    if [ -f "$CONFIGURATION_FILE_PATH" ]
+    then 
+        source $CONFIGURATION_FILE_PATH
+    else 
+        printf "\033[31;1mChoco-Scripts are not installed for this user\033[0m\n"
+        exit 1
+    fi
+fi
+
+#
+#   Information message
+#
+echo "Using choco-scripts from path $CHOCO_SCRIPTS_PATH in version $CHOCO_SCRIPTS_VERSION"
 
 #
 #   Importing of the framework main script
 #
-source $CHOCO_SCRIPTS_DIR/functions.sh
+source $(getChocoScriptsPath)
 
 #
 #   The function prepares a framework script to work

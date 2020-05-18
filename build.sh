@@ -43,7 +43,7 @@ function createVersionFile()
 function buildImage()
 {
     createVersionFile
-    doCommandAsStep "Building of image $IMAGE_NAME:${VERSION/V./}" docker build -t "$IMAGE_NAME:${VERSION/V./}" -f Dockerfile .
+    doCommandAsStep "Building of image $IMAGE_NAME:${VERSION/V./}" docker build -t "$IMAGE_NAME:${VERSION/V./}" --build-arg VERSION=${VERSION/V./} -f Dockerfile .
     doCommandAsStep "Tagging of image $IMAGE_NAME:${VERSION/V./} as $IMAGE_NAME:latest" docker tag "$IMAGE_NAME:${VERSION/V./}" "$IMAGE_NAME:latest"
     doCommandAsStep "Pushing of the image $IMAGE_NAME:${VERSION/V./}" docker push $IMAGE_NAME:${VERSION/V./}
     doCommandAsStep "Pushing of the image $IMAGE_NAME:latest" docker push $IMAGE_NAME:latest
