@@ -8,6 +8,7 @@
 #
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
+
 #
 #   Path to the configuration file
 #
@@ -16,15 +17,12 @@ CONFIGURATION_FILE_PATH=~/.choco-scripts.cfg
 #
 #   Verification of the choco scripts installation
 #
-if [ "$CHOCO_SCRIPTS_VERSION" == "" ] 
+if [ -f "$CONFIGURATION_FILE_PATH" ]
 then 
-    if [ -f "$CONFIGURATION_FILE_PATH" ]
-    then 
-        source $CONFIGURATION_FILE_PATH
-    else 
-        printf "\033[31;1mChoco-Scripts are not installed for this user\033[0m\n"
-        exit 1
-    fi
+    source $CONFIGURATION_FILE_PATH
+else 
+    printf "\033[31;1mChoco-Scripts are not installed for this user\033[0m\n"
+    exit 1
 fi
 
 #
