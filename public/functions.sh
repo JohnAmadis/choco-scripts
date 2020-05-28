@@ -295,7 +295,7 @@ function pullFile()
         if isStringEqual "$PULL_MODE" "never" 
         then 
             return 0
-        elif isStringEqual "$PULL_MODE" "ask" && ! printQuestion "The file '$OUTPUT_FILE' already exists (File size: $FILE_SIZE). Do you want to pull it anyway?"
+        elif isStringEqual "$PULL_MODE" "ask" && ! printQuestion "The file '$OUTPUT_FILE' already exists (File size: $FILE_SIZE). Do you want to pull it anyway?" "y"
         then 
             return 0
         fi
@@ -342,7 +342,7 @@ function writeImageToDevice()
         printError "Cannot find image file: '$IMAGE_PATH'"
     fi
     
-    if ! printQuestion "The script is going to override a device '$DEVICE_PATH' - ALL DATA ON THE DEVICE WILL BE LOST! Do you want to continue?"
+    if ! printQuestion "The script is going to override a device '$DEVICE_PATH' - ALL DATA ON THE DEVICE WILL BE LOST! Do you want to continue?" "y"
     then 
         printError "Stopped by a user"
     fi
@@ -689,7 +689,7 @@ function resizeImage()
             then 
                 if ! doCommandAsStep "Partition '$PARTITION' is already mounted - unmounting" sudo umount $PARTITION
                 then 
-                    if ! printQuestion "We could not unmount device '$PARTITION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of partition on '$PARTITION' with force" sudo umount -l "$PARTITION"
+                    if ! printQuestion "We could not unmount device '$PARTITION' - do we can to use the force?" "y" || ! doCommandAsStep "Unmounting of partition on '$PARTITION' with force" sudo umount -l "$PARTITION"
                     then 
                         printError "Cannot unmount device: '$PARTITION'. If you dont need it, please just unmount and it and remove it then"
                     fi 
@@ -758,14 +758,14 @@ function mountImage()
             then 
                 if ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION'" sudo umount "$DESTINATION"
                 then 
-                    if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
+                    if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" "y" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
                     then 
                         printError "Cannot unmount path: '$DESTINATION'. If you dont need it, please just unmount and it and remove it then"
                     fi
                 fi
             elif ! isDirectoryEmpty "$DESTINATION"
             then 
-                if printQuestion "Directory '$DESTINATION' is not empty. Do you need it?"
+                if printQuestion "Directory '$DESTINATION' is not empty. Do you need it?" "N"
                 then 
                     DESTINATION=$DESTINATION$RANDOM
                 else 
@@ -819,7 +819,7 @@ function umountImage()
             doCommandAsStepWithSpinner "Waiting with umounting untill not busy" waitForUnmount "$DESTINATION"
             if ! doCommandAsStep "Unmounting of partition '$PARTITION' from '$DESTINATION'" sudo umount "$DESTINATION" && isMountedOn "$PARTITION" "$DESTINATION"
             then 
-                if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
+                if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" "y" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
                 then 
                     printError "Cannot unmount path: '$DESTINATION'. If you dont need it, please just unmount and it and remove it then"
                 fi
@@ -2065,20 +2065,35 @@ function printQuestion()
 {
     local QUESTION=$1
     local RESULT=1
+    local DEFAULT=$2
     
-    while 
-        printf "\033[35;1m[ QUESTION ]\033[0m $QUESTION [y/N]: "
-        read RESPONSE
-        if isStringEqual "$RESPONSE" "y"
-        then
-            return 0
-        elif isStringEqual "$RESPONSE" "N"
-        then 
-            return 1
-        fi
-    do
-        :
-    done
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while 
+            printf "\033[35;1m[ QUESTION ]\033[0m $QUESTION [y/N]: "
+            read RESPONSE
+            if isStringEqual "$RESPONSE" "y"
+            then
+                return 0
+            elif isStringEqual "$RESPONSE" "N"
+            then 
+                return 1
+            fi
+        do
+            :
+        done
+    elif isStringEmpty "$DEFAULT"
+    then 
+        return 0
+    elif isStringEqual "$DEFAULT" "y"
+    then 
+        return 0
+    elif isStringEqual "$DEFAULT" "N"
+    then 
+        return 1
+    else 
+        return $DEFAULT
+    fi
 }
 
 #
@@ -2088,21 +2103,28 @@ function printQuestionWithStringAnswer()
 {
     local __QUESTION="$1"
     local __VAR_NAME="$2"
+    local __DEFAULT=$3
     local __RESPONSE=""
-    while
-        printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type #exit to cancel ]: "
-        read __RESPONSE
-        if isStringEqual "$__RESPONSE" "#exit"
-        then 
-            return 1
-        elif ! isStringEmpty "$__RESPONSE"
-        then 
-            eval $__VAR_NAME="'$__RESPONSE'"
-            return 0
-        fi
-    do
-        :
-    done
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while
+            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type #exit to cancel ]: "
+            read __RESPONSE
+            if isStringEqual "$__RESPONSE" "#exit"
+            then 
+                return 1
+            elif ! isStringEmpty "$__RESPONSE"
+            then 
+                eval $__VAR_NAME="'$__RESPONSE'"
+                return 0
+            fi
+        do
+            :
+        done
+    else 
+        eval $__VAR_NAME="'$__DEFAULT'"
+        return 0
+    fi
 }
 
 #
@@ -2314,7 +2336,7 @@ function installRequiredTool()
     
     if ! isStringEqual "$ACCEPTED" "TRUE"
     then 
-        if printQuestion "Do you want to continue installation of tool '$TOOL'?"
+        if printQuestion "Do you want to continue installation of tool '$TOOL'?" "y"
         then 
             ACCEPTED="TRUE"
         else
@@ -2385,14 +2407,14 @@ function installAllRequiredTools()
     
     if ! isRoot
     then 
-        if ! printQuestion "We have detected, that you are not logged as root. To avoid passing a password to all the commands separately, we propose you to use 'sudo su' command before the script. Do you want to continue anyway?"
+        if ! printQuestion "We have detected, that you are not logged as root. To avoid passing a password to all the commands separately, we propose you to use 'sudo su' command before the script. Do you want to continue anyway?" "y"
         then 
             printInfo "Closing the script.\n"
             exit 0;
         fi
     fi
     
-    if printQuestion "Do you want to accept the installation of all tools at once?"
+    if printQuestion "Do you want to accept the installation of all tools at once?" "y"
     then 
         ACCEPTED="TRUE"
     fi
@@ -2600,7 +2622,7 @@ function openDataInBrowser()
     if isStringEqual $__OPEN_BROWSER "FILE"
     then 
         echo "$DATA" > $TEMP_FILE
-    elif isStringEqual $__OPEN_BROWSER "YES" || ( isStringEqual $__OPEN_BROWSER "PROMPT" && printQuestion "Do you want to open a HTML data in browser?" )
+    elif isStringEqual $__OPEN_BROWSER "YES" || ( isStringEqual $__OPEN_BROWSER "PROMPT" && printQuestion "Do you want to open a HTML data in browser?" "N" )
     then 
         echo "$DATA" > $TEMP_FILE
         doCommand see "$TEMP_FILE" 2>/dev/null
@@ -3348,6 +3370,7 @@ addRequiredTool "htpasswd" "A tool required for bcrypt password encryption" "FAL
 addRequiredTool "php" "Engine for PHP scripts." "FALSE" "sudo apt-get install -y php"
 addRequiredTool "parted" "Useful tool for managing partitions" "FALSE" "sudo apt-get install -y parted"
 addRequiredTool "jq" "A tool for parsing of JSON files" "FALSE" "sudo apt-get install -y jq"
+addRequiredTool "curl" "Very useful tool for execution of URL requests" "FALSE" "sudo apt-get install -y curl"
 
 addCommandLineOptionalArgument __TOOL_TO_INSTALL "--install-required-tool" "options" "You can use this option to install tool required by this script" "realpath" "${__REQUIRED_TOOLS[*]}"
 addCommandLineOptionalArgument __INSTALL_ALL_REQUIRED "--install-all-required" "bool" "You can use this argument to install all tools required by the script" "FALSE"
@@ -3355,3 +3378,4 @@ addCommandLineOptionalArgument __PRINT_REQUIRED_TOOLS_LIST "--print-required-too
 addCommandLineOptionalArgument __OPEN_BROWSER "--open-browser" "options" "Allows for opening HTML data in browser" "PROMPT" "YES NO PROMPT FILE"
 addCommandLineOptionalArgument __CURL_OUTPUT_FILE "--curl-output-file" "file" "Name of output file for CURL requests" "/tmp/tmp$RANDOM.html"
 addCommandLineOptionalArgument VERBOSE "--verbose" "bool" "If the option is enabled, the script will keep printing all information from commands, otherwise it will print only the errors" "FALSE"
+addCommandLineOptionalArgument NON_INTERACTIVE "--non-interactive" "bool" "If the option is enabled, the script will not show the prompt with asking for an user input" "FALSE"
