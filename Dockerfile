@@ -25,6 +25,25 @@ RUN mkdir /scripts/
 COPY install-choco-scripts.sh /scripts/
 
 #
-#   Installation of the 
+#   Installation of the choco-scripts
 #
 RUN /scripts/install-choco-scripts.sh /scripts/ $VERSION
+
+#
+#   Disabling interactive mode
+#
+ENV DEBIAN_FRONTEND=noninteractive
+
+#
+#   Some installation in the packages are interactive, so we 
+#   want to force noninteractive mode
+#
+RUN ln -fs /usr/share/zoneinfo/Europe/Warsaw /etc/localtime
+RUN apt-get install -y tzdata
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+RUN apt-get install -y sudo
+
+#
+#   Installs all tools required by the template script by default
+#
+RUN /scripts/template.sh --install-all-required --non-interactive
