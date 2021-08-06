@@ -46,4 +46,6 @@ RUN apt-get install -y sudo
 #
 #   Installs all tools required by the template script by default
 #
-RUN /scripts/template.sh --install-all-required --non-interactive
+RUN cp /scripts/template.sh /tmp/dummy_script.sh
+RUN sed "s/<SCRIPT_ARGUMENTS>//g" -i "/tmp/dummy_script.sh"
+RUN /tmp/dummy_script.sh --install-all-required --non-interactive
