@@ -18,6 +18,7 @@ CREATE_CHOCO_SCRIPT_FILE_PATH=$TARGET_PATH/$CREATE_CHOCO_SCRIPT_FILE_NAME
 USER_CONFIG_PATH=~/.choco-scripts.cfg
 BASHRC_FILE_PATH=~/.bashrc
 ENTRY_SCRIPT_NAME=choco-scripts
+INSTALL_URL=https://release.choco-technologies.com/scripts/install-choco-scripts.sh
 
 if [ "$1" == "--help" ]
 then 
@@ -66,7 +67,7 @@ fi
 
 mkdir -p $TARGET_PATH
 result=$?
-if [ ! $result -eq 0 ]bash
+if [ ! $result -eq 0 ]
 then 
     echo "Creation of the target directory '$TARGET_PATH' not possible - maybe some privileges are missing?"
     exit 1
@@ -99,6 +100,10 @@ echo "}" >> $USER_CONFIG_PATH
 echo "function createChocoScript()" >> $USER_CONFIG_PATH
 echo "{" >> $USER_CONFIG_PATH
 echo '   "$CHOCO_SCRIPTS_PATH/$CHOCO_SCRIPT_CREATE_CHOCO_SCRIPT_FILE_NAME" $@   ' >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo "function updateChocoScripts()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo "   wget -O - $INSTALL_URL | bash" >> $USER_CONFIG_PATH
 echo "}" >> $USER_CONFIG_PATH
 echo 'printf "\033[37;1mHello, Choco scripts are installed in version \033[35;1m$CHOCO_SCRIPTS_VERSION\033[37;1m in the path \033[35;1m$CHOCO_SCRIPTS_PATH\033[0m\n"' >> $USER_CONFIG_PATH
 echo 'printf "\033[37;1mPlease use command \033[36;1msource \$(getChocoScriptsPath)\033[37;1m to import it in your project\033[0m\n"' >> $USER_CONFIG_PATH

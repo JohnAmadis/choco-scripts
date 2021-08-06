@@ -46,12 +46,26 @@ root@76afe4802bf7:/#
 
 *You can create a new **choco-scripts** based application in 2 ways:*
 
-- by using `template.sh` file
 - by using `createChocoScript` command
+- by using `template.sh` file
+
+### Usage of createChocoScript
+
+The easiest way to create a new choco-script is to use `createChocoScript` function. Once the framework is installed and the `bash` has been restarted, you should be able to call a function `createChocoScript`, which will show you a series of questions about the script you want to create. This will allow you to configure:
+
+- name and path of the new script
+- description for the script help
+- script parameters
+ 
+If you want to see a description of supported argument types, just type:
+
+```bash
+createChocoScript --print-supported-arguments
+```
 
 ### Usage of template.sh file
 
-To create your first **Choco-Scripts** "Hello World" program use the `template.sh` file:
+An alternative to `createChocoScript` function is to use the `template.sh` file:
 
 ```bash
 # The function copies the template into current path

@@ -53,6 +53,8 @@ function prepareScript()
 {
     defineScript "$0" "The script is designed for creation of a new script based on the choco-script framework."
     
+    addCommandLineOptionalArgument PRINT_SUPPORTED_ARGUMENT_TYPES --print-supported-arguments bool 'If the flag is set, the script prints all the supported argument types' 'FALSE'
+    
     parseCommandLineArguments "$@"
 }
 
