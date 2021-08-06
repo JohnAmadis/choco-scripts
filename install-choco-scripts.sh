@@ -11,7 +11,10 @@ VERSION=latest
 FILE_NAME=choco-scripts-$VERSION.tar.gz
 URL=http://release.choco-technologies.com/scripts/$FILE_NAME
 TARGET_PATH=~/.choco-scripts
-TEMPLATE_FILE_PATH=$TARGET_PATH/template.sh
+TEMPLATE_FILE_NAME=template.sh
+TEMPLATE_FILE_PATH=$TARGET_PATH/$TEMPLATE_FILE_NAME
+CREATE_CHOCO_SCRIPT_FILE_NAME=create_choco_script.sh
+CREATE_CHOCO_SCRIPT_FILE_PATH=$TARGET_PATH/$CREATE_CHOCO_SCRIPT_FILE_NAME
 USER_CONFIG_PATH=~/.choco-scripts.cfg
 BASHRC_FILE_PATH=~/.bashrc
 ENTRY_SCRIPT_NAME=choco-scripts
@@ -63,7 +66,7 @@ fi
 
 mkdir -p $TARGET_PATH
 result=$?
-if [ ! $result -eq 0 ]
+if [ ! $result -eq 0 ]bash
 then 
     echo "Creation of the target directory '$TARGET_PATH' not possible - maybe some privileges are missing?"
     exit 1
@@ -81,11 +84,21 @@ rm $FILE_NAME
 
 echo "export CHOCO_SCRIPTS_PATH=$TARGET_PATH" > $USER_CONFIG_PATH
 echo "export CHOCO_SCRIPT_ENTRY_FILE_NAME=$ENTRY_SCRIPT_NAME" >> $USER_CONFIG_PATH
+echo "export CHOCO_SCRIPT_TEMPLATE_FILE_NAME=$TEMPLATE_FILE_NAME" >> $USER_CONFIG_PATH
+echo "export CHOCO_SCRIPT_CREATE_CHOCO_SCRIPT_FILE_NAME=$CREATE_CHOCO_SCRIPT_FILE_NAME" >> $USER_CONFIG_PATH
 echo "export CHOCO_SCRIPTS_VERSION=$(cat $TARGET_PATH/version)" >> $USER_CONFIG_PATH
 echo 'export PATH="$PATH:$CHOCO_SCRIPTS_PATH"' >> $USER_CONFIG_PATH
 echo "function getChocoScriptsPath()" >> $USER_CONFIG_PATH
 echo "{" >> $USER_CONFIG_PATH
 echo '   echo "$CHOCO_SCRIPTS_PATH/$CHOCO_SCRIPT_ENTRY_FILE_NAME"' >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo "function getChocoTemplatePath()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo '   echo "$CHOCO_SCRIPTS_PATH/$CHOCO_SCRIPT_TEMPLATE_FILE_NAME"' >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo "function createChocoScript()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo '   "$CHOCO_SCRIPTS_PATH/$CHOCO_SCRIPT_CREATE_CHOCO_SCRIPT_FILE_NAME" $@   ' >> $USER_CONFIG_PATH
 echo "}" >> $USER_CONFIG_PATH
 echo 'printf "\033[37;1mHello, Choco scripts are installed in version \033[35;1m$CHOCO_SCRIPTS_VERSION\033[37;1m in the path \033[35;1m$CHOCO_SCRIPTS_PATH\033[0m\n"' >> $USER_CONFIG_PATH
 echo 'printf "\033[37;1mPlease use command \033[36;1msource \$(getChocoScriptsPath)\033[37;1m to import it in your project\033[0m\n"' >> $USER_CONFIG_PATH
@@ -98,6 +111,7 @@ fi
 source $USER_CONFIG_PATH
 
 printf "\033[32;1mCongratulations, the choco-scripts in version $VERSION are now installed at $TARGET_PATH\033[0m\n"
-echo "You can use file $TEMPLATE_FILE_PATH as a template for your scripts"
+printf "You can use file \033[37;1m$(getChocoTemplatePath)\033[0m as a template for your scripts\n"
+printf "or just call function \033[37;1mcreateChocoScript\033[0m\n"
 echo "To import choco-scripts in your script, just add: "
-echo 'source $(getChocoScriptsPath)'
+printf '\033[35;1msource $(getChocoScriptsPath)\033[0m\n'
