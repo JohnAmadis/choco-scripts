@@ -75,7 +75,72 @@ function prepareScript()
 }
 ```
 
+You can change here the script description and command line arguments. To understand it better it is good to run a `--help` first:
 
+```bash 
+
+root@76afe4802bf7:/# /tmp/myscript.sh --help
+Hello, Choco scripts are installed in version 1.0.5 in the path /root/.choco-scripts
+Please use command source $(getChocoScriptsPath) to import it in your project
+Using choco-scripts from path /root/.choco-scripts in version 1.0.5
+[ VERIFICATION ] Directory '/tmp' exists?   
+=======================================================================================
+                                       HELP                                              
+=======================================================================================
+
+The script '/tmp/myscript.sh'
+
+My hello-world script based on choco-scripts framework in version 1.0.5 
+
+  To see the help please use: 
+	/tmp/myscript.sh --help
+  Usage: 
+	/tmp/myscript.sh [--install-required-tool=<value>] [--install-all-required] [--print-required-tools] [--open-browser=<value>] [--curl-output-file=<value>] [--verbose] [--non-interactive] [-s|--string=<value>] 
+
+
+      where:
+
+            --install-required-tool=*
+                       Argument name: __TOOL_TO_INSTALL
+                       Argument type: options
+                       Type description: 
+
+                                 This argument type allows for choosing only from predefined list of supported values
+
+                       Default value: realpath
+                       Value description: 
+
+                                 You can use this option to install tool required by this script
+
+                       Supported values: 
+
+                                 realpath wget unzip sudo htpasswd php parted jq curl
+
+                       Example of usage: 
+
+                                 /tmp/myscript.sh --install-required-tool=realpath
+
+            -s=*,--string=*
+                       Argument name: EXAMPLE_ARGUMENT
+                       Argument type: not_empty_string
+                       Type description: 
+
+                                 This type of argument allows for passing strings, but the string cannot be empty
+
+                       Default value: This is my message from command line argument
+                       Value description: 
+
+                                 Example argument to be parsed from command line arguments
+
+                       Example of usage: 
+
+                                 /tmp/myscript.sh --string="some_string"
+                             or
+                                 /tmp/myscript.sh -s="some_string"
+
+```
+
+As you can see the framework auto-generated the `--help` message for the script
 
 
 ## License
