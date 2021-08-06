@@ -5,7 +5,7 @@
 
 The **Choco-Scripts** is a `bash` framework that speeds up scripts development. It is very easy to install and requires only `wget` to start working. 
 
-You can use the following command to install it in your environemnt:
+You can use the following command to install it in your enviroment:
 
 
 ```bash
@@ -43,6 +43,39 @@ root@76afe4802bf7:/#
 ***
 
 ## Your first hello-world with Choco-Scripts
+
+*You can create a new **choco-scripts** based application in 2 ways:*
+
+- by using `template.sh` file
+- by using `createChocoScript` command
+
+### Usage of template.sh file
+
+To create your first **Choco-Scripts** "Hello World" program use the `template.sh` file:
+
+```bash
+# The function copies the template into current path
+cp ~/.choco-scripts/template.sh myscript.sh
+```
+
+Then edit the `myscript.sh` file in your favorite bash editor. Find the following code inside:
+
+
+```bash
+#
+#   The function prepares a framework script to work
+#
+function prepareScript()
+{
+    defineScript "$0" "My hello-world script based on choco-scripts framework in version $(cat $CHOCO_SCRIPTS_DIR/version)"
+    
+    addCommandLineOptionalArgument EXAMPLE_ARGUMENT "-s|--string" "not_empty_string" "Example argument to be parsed from command line arguments" "This is my message from command line argument"
+    
+    parseCommandLineArguments "$@"
+}
+```
+
+
 
 
 ## License
