@@ -1458,6 +1458,14 @@ function isArgumentTypeSupported()
 }
 
 #
+#   Prints all the supported argument types
+#
+function getSupportedArgumentTypes()
+{
+    echo "${__SUPPORTED_ARGUMENT_TYPES[*]}"
+}
+
+#
 #   Checks if the given argument has been added to the supported list
 #
 function isKnownArgument()
@@ -1769,19 +1777,21 @@ function validateArgumentValue()
 {
     local ARGUMENT=$1
     local VALUE=$2
+    local FINISH_SCRIPT=${3:-"TRUE"}
     
     ARGUMENT_TYPE=$(getArgumentType $ARGUMENT)
     
     if ! isArgumentTypeSet $ARGUMENT 
     then 
-        printError "Type ($(getArgumentType $ARGUMENT)) for argument '$ARGUMENT' is not set or not supported."
+        printError "Type ($(getArgumentType $ARGUMENT)) for argument '$ARGUMENT' is not set or not supported." "$FINISH_SCRIPT"
+        return 1
     elif isArgumentType "$ARGUMENT" "int"
     then
         if isInteger "$VALUE"
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be an integer!"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be an integer!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "size"
@@ -1791,11 +1801,11 @@ function validateArgumentValue()
         SIZE=$(getSizeFromSizeString "$VALUE")
         if [[ ! "$VALUE" =~ ^$REGULAR_EXPRESSION ]]
         then 
-            printError "The given value: '$VALUE' is not valid for argument $(getArgumentName $ARGUMENT) - it has to be positive integer with units like: 100GB"
+            printError "The given value: '$VALUE' is not valid for argument $(getArgumentName $ARGUMENT) - it has to be positive integer with units like: 100GB" "$FINISH_SCRIPT"
             return 1
         elif ! isSizeUnitSupported "$UNIT"
         then 
-            printError "The given size unit: '$UNIT' is not supported. The supported ones: $(getSupportedSizeUnitsString)" 
+            printError "The given size unit: '$UNIT' is not supported. The supported ones: $(getSupportedSizeUnitsString)" "$FINISH_SCRIPT"
             return 1
         elif [[ $(toBytes "$VALUE") -lt 0 ]]
         then 
@@ -1809,7 +1819,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be a bool!"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be a bool!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "options"
@@ -1817,12 +1827,12 @@ function validateArgumentValue()
         SUPPORTED_VALUES=$(getArgumentSupportedValues $ARGUMENT)
         if isStringEmpty "$VALUE"
         then 
-            printError "Argument $(getArgumentName $ARGUMENT) cannot be empty. Supported values: $(getArgumentSupportedValues $ARGUMENT)"
+            printError "Argument $(getArgumentName $ARGUMENT) cannot be empty. Supported values: $(getArgumentSupportedValues $ARGUMENT)" "$FINISH_SCRIPT"
         elif isInArray "$VALUE" "${SUPPORTED_VALUES[*]}"
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not supported! Supported values: $(getArgumentSupportedValues $ARGUMENT)"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not supported! Supported values: $(getArgumentSupportedValues $ARGUMENT)" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "regex"
@@ -1832,7 +1842,8 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) does not match regular expression: '$REGULAR_EXPRESSION'"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) does not match regular expression: '$REGULAR_EXPRESSION'" "$FINISH_SCRIPT"
+            return 1
         fi 
     elif isArgumentType "$ARGUMENT" "ip"
     then
@@ -1841,7 +1852,8 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not valid IP! Only IPv4 is supported in range: 0.0.0.0-255.255.255.255"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not valid IP! Only IPv4 is supported in range: 0.0.0.0-255.255.255.255" "$FINISH_SCRIPT"
+            return 1
         fi 
     elif isArgumentType "$ARGUMENT" "new_directory"
     then
@@ -1852,7 +1864,7 @@ function validateArgumentValue()
             then 
                 return 0
             else
-                printError "The given path: '$VALUE' for the argument $(getArgumentName $ARGUMENT) already exists and cannot be removed"
+                printError "The given path: '$VALUE' for the argument $(getArgumentName $ARGUMENT) already exists and cannot be removed" "$FINISH_SCRIPT"
                 return 1
             fi
         fi
@@ -1861,7 +1873,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "Cannot create directory: '$VALUE' for the argument $(getArgumentName $ARGUMENT)"
+            printError "Cannot create directory: '$VALUE' for the argument $(getArgumentName $ARGUMENT)" "$FINISH_SCRIPT"
             return 1
         fi
     
@@ -1871,7 +1883,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given directory: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!"
+            printError "The given directory: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "directory"
@@ -1884,7 +1896,7 @@ function validateArgumentValue()
             then 
                 return 0
             else
-                printError "Directory: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created!"
+                printError "Directory: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created!" "$FINISH_SCRIPT"
                 return 1
             fi
         fi
@@ -1895,7 +1907,7 @@ function validateArgumentValue()
             printWarning "The given path: '$VALUE' for the argument $(getArgumentName $ARGUMENT) already exists - it will be removed"
             if ! removeFile "$VALUE"
             then 
-                printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) already exists and cannot be removed"
+                printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) already exists and cannot be removed" "$FINISH_SCRIPT"
                 return 1
             fi
         fi
@@ -1905,7 +1917,7 @@ function validateArgumentValue()
         then 
             return 0
         else
-            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created"
+            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created" "$FINISH_SCRIPT"
             return 1
         fi 
     elif isArgumentType "$ARGUMENT" "existing_file"
@@ -1914,7 +1926,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!"
+            printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "existing_files"
@@ -1922,14 +1934,14 @@ function validateArgumentValue()
         EXISTING_FILES="$(splitStringByDelimited "$VALUE" ":")"
         if [ ${#EXISTING_FILES[@]} -eq 0 ]
         then 
-            printError "Array with existing files given for '$ARGUMENT' cannot be empty!"
+            printError "Array with existing files given for '$ARGUMENT' cannot be empty!" "$FINISH_SCRIPT"
             return 1
         fi
         for file in ${EXISTING_FILES[*]}
         do 
             if ! fileExists "$file"
             then 
-                printError "The file: '$file' given for '$ARGUMENT' does not exist!"
+                printError "The file: '$file' given for '$ARGUMENT' does not exist!" "$FINISH_SCRIPT"
                 return 1
             fi
         done
@@ -1941,14 +1953,14 @@ function validateArgumentValue()
         then 
             return 0
         else
-            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created"
+            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created" "$FINISH_SCRIPT"
             return 1
         fi 
     elif isArgumentType "$ARGUMENT" "not_empty_string"
     then
         if isStringEmpty "$VALUE"
         then 
-            printError "The given string: '$VALUE' for argument: $(getArgumentName $ARGUMENT) cannot be empty!"
+            printError "The given string: '$VALUE' for argument: $(getArgumentName $ARGUMENT) cannot be empty!" "$FINISH_SCRIPT"
             return 1
         else 
             return 0
@@ -1960,7 +1972,8 @@ function validateArgumentValue()
     then
         return 0
     else 
-        printError "Unexpected argument type: $ARGUMENT_TYPE"
+        printError "Unexpected argument type: $ARGUMENT_TYPE" "$FINISH_SCRIPT"
+        return 1
     fi 
 }
 
@@ -2097,30 +2110,192 @@ function printQuestion()
 }
 
 #
+#   Converts the string name to the variable name
+#
+function toVariableName()
+{
+    local argumentName=$1
+    echo "${argumentName^^}" | sed -r 's/ /_/g' | sed -r 's/[^a-zA-Z0-9_]//g'
+}
+
+#
+#   Converts the string name to the script argument name
+#
+function toScriptArgument()
+{
+    local argumentName=$1
+    echo "--${argumentName,,}" | sed -r 's/ /-/g' | sed -r 's/[^a-zA-Z0-9-]//g'
+}
+
+#
 #   Prints question with string answer and returns 0 if success
 #
 function printQuestionWithStringAnswer()
 {
     local __QUESTION="$1"
     local __VAR_NAME="$2"
-    local __DEFAULT=$3
+    local __DEFAULT="$3"
     local __RESPONSE=""
+    local default_description=""
+    if ! isStringEmpty "$__DEFAULT"
+    then 
+        default_description=" (\033[37;1mdefault:\033[0m \033[36;1m$__DEFAULT\033[0m)"
+    fi
     if isStringEqual "$NON_INTERACTIVE" "FALSE"
     then 
         while
-            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type #exit to cancel ]: "
+            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type \033[35;1m#exit\033[0m to cancel ]$default_description: "
             read __RESPONSE
-            if isStringEqual "$__RESPONSE" "#exit"
+            if isStringEqual "$__RESPONSE" "exit" && printQuestion "Do you want to exit? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                return 1
+            elif isStringEqual "$__RESPONSE" "#exit"
             then 
                 return 1
             elif ! isStringEmpty "$__RESPONSE"
             then 
                 eval $__VAR_NAME="'$__RESPONSE'"
+                printf "\033[37;1mYour answer:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                return 0
+            elif ! isStringEmpty "$__DEFAULT"
+            then 
+                eval $__VAR_NAME="'$__DEFAULT'"
+                printf "\033[37;1mUsing default:\033[0m \033[36;1m$__DEFAULT\033[0m\n"
                 return 0
             fi
         do
             :
         done
+    elif isStringEmpty "$__DEFAULT"
+    then 
+        printError "Cannot skip the question - the default value is empty"
+    else 
+        eval $__VAR_NAME="'$__DEFAULT'"
+        return 0
+    fi
+}
+
+#
+#   Prints question with string answer and returns 0 if success
+#   The function calls the validator function if the value is given
+#
+function printQuestionWithValidator()
+{
+    local __QUESTION="$1"
+    local __VAR_NAME="$2"
+    local __VALIDATOR_FUNCTION="$3"
+    local __DEFAULT="$4"
+    local __RESPONSE=""
+    local default_description=""
+    if ! isStringEmpty "$__DEFAULT"
+    then 
+        default_description=" (\033[37;1mdefault:\033[0m \033[36;1m$__DEFAULT\033[0m)"
+    fi
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while
+            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type \033[35;1m#exit\033[0m to cancel ]$default_description: "
+            read __RESPONSE
+            if isStringEqual "$__RESPONSE" "exit" && printQuestion "Do you want to exit? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                return 1
+            elif isStringEqual "$__RESPONSE" "#exit"
+            then 
+                return 1
+            elif ! $__VALIDATOR_FUNCTION "$__RESPONSE"
+            then 
+                printf "\033[33;1mThe given value is not supported: $__RESPONSE\033[0m\n"
+            elif ! isStringEmpty "$__RESPONSE"
+            then 
+                eval $__VAR_NAME="'$__RESPONSE'"
+                printf "\033[37;1mYour answer:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                return 0
+            elif ! $__VALIDATOR_FUNCTION "$__DEFAULT"
+            then 
+                printError "The default value is invalid"
+            elif ! isStringEmpty "$__DEFAULT"
+            then 
+                eval $__VAR_NAME="'$__DEFAULT'"
+                printf "\033[37;1mUsing default:\033[0m \033[36;1m$__DEFAULT\033[0m\n"
+                return 0
+            fi
+        do
+            :
+        done
+    elif isStringEmpty "$__DEFAULT"
+    then 
+        printError "Cannot skip the question - the default value is empty"
+    elif ! $__VALIDATOR_FUNCTION "$__DEFAULT"
+    then 
+        printError "The default value is invalid"
+    else 
+        eval $__VAR_NAME="'$__DEFAULT'"
+        return 0
+    fi
+}
+
+#
+#   Prints question with string answer and returns 0 if success
+#
+function printQuestionWithEnumAnswer()
+{
+    local __QUESTION="$1"
+    local __VAR_NAME="$2"
+    local __SUPPORTED_VALUES="$3"
+    local __DEFAULT=$4
+    local __RESPONSE=""
+    local default_description=""
+    if ! isStringEmpty "$__DEFAULT"
+    then 
+        default_description=" (\033[37;1mdefault:\033[0m \033[36;1m$__DEFAULT\033[0m)"
+    fi
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while
+            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type \033[35;1m#exit\033[0m to cancel or \033[35;1m#help\033[0m to get a list of supported values ]$default_description: "
+            read __RESPONSE
+            if isStringEqual "$__RESPONSE" "exit" && printQuestion "Do you want to exit? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                return 1
+            elif isStringEqual "$__RESPONSE" "help" && printQuestion "Do you want to print help? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                printf "\033[37;1mList of supported values: \n"
+                for supported_value in ${__SUPPORTED_VALUES[*]}
+                do 
+                    printf "\t\033[36;1m$supported_value\033[0m\n"
+                done
+            elif isStringEqual "$__RESPONSE" "#help"
+            then
+                printf "\033[37;1mList of supported values: \n"
+                for supported_value in ${__SUPPORTED_VALUES[*]}
+                do 
+                    printf "\t\033[36;1m$supported_value\033[0m\n"
+                done
+            elif isStringEqual "$__RESPONSE" "#exit"
+            then 
+                return 1
+            elif ! isStringEmpty "$__RESPONSE"
+            then 
+                if isInArray "$__RESPONSE" "${__SUPPORTED_VALUES[*]}"
+                then 
+                    eval $__VAR_NAME="'$__RESPONSE'"
+                    printf "\033[37;1mYour answer:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                    return 0
+                else 
+                    printf "\033[33;1mThe given value is not supported:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                fi
+            elif ! isStringEmpty "$__DEFAULT"
+            then 
+                eval $__VAR_NAME="'$__DEFAULT'"
+                printf "\033[37;1mUsing default:\033[0m \033[36;1m$__DEFAULT\033[0m\n"
+                return 0
+            fi
+        do
+            :
+        done
+    elif isStringEmpty "$__DEFAULT"
+    then 
+        printError "Cannot skip the question - the default value is empty"
     else 
         eval $__VAR_NAME="'$__DEFAULT'"
         return 0
