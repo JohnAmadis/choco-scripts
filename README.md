@@ -16,7 +16,36 @@ sudo apt-get update && apt-get install -y wget
 wget -O - https://release.choco-technologies.com/scripts/install-choco-scripts.sh | bash
 ```
 
-# License
+Once the scripts are installed, they are auto-loaded on bash start and you can start using it. To import it in your script, just add the following line into your project:
+
+
+``bash 
+source $(getChocoScriptsPath)
+``
+***
+**NOTE:**
+
+*Please remember that just after installation you have to restart bash to make the command `getChocoScriptsPath` work. You can do this by using command `bash`.*
+
+
+
+**You should see the following message:**
+
+
+```bash
+root@76afe4802bf7:/# bash
+Hello, Choco scripts are installed in version 1.0.5 in the path /root/.choco-scripts
+Please use command source $(getChocoScriptsPath) to import it in your project
+root@76afe4802bf7:/#
+
+```
+
+***
+
+## Your first hello-world with Choco-Scripts
+
+
+## License
 
 The project is published under **MIT** license.  
 
