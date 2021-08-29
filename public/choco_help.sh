@@ -115,7 +115,7 @@ function prepareScript()
     defineScript "$0" "Prints help for a choco-script functions"
     
     addCommandLineOptionalArgument 'LIST' '--list' bool 'Prints list of supported choco-scripts functions' 'FALSE' ''
-    addCommandLineOptionalArgument 'FUNCTION_NAME' '--function-name' options 'Name of the function to print a help for' 'copyFile' "$(echo ${SUPPORTED_FUNCTIONS[*]})"
+    addCommandLineOptionalArgument 'FUNCTION_NAME' '--function-name' options 'Name of the function to print a help for' 'None' "$(echo ${SUPPORTED_FUNCTIONS[*]}) None"
     
     parseCommandLineArguments "$@"
 }
@@ -164,7 +164,10 @@ prepareScript "$@"
 if isStringEqual "$LIST" "TRUE"
 then 
     printListOfFunctions
-else 
+elif ! isStringEqual "$FUNCTION_NAME" "None"
+then
     printf "\n\n"
     printHelpOfFunction "$FUNCTION_NAME"
+else 
+    printHelp
 fi
