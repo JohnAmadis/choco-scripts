@@ -3899,6 +3899,44 @@ function isArgumentValueSet()
 
 
 
+#
+#   Checks if the given argument is hidden 
+#
+function _isHiddenArgument()
+{
+    # Name of an argument 
+    local ARGUMENT=$1
+    
+    if [ "${ARGUMENT:0:1}" = _ ]
+    then 
+        return 0
+    else 
+        return 1
+    fi
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if the given argument type is supported 
@@ -7732,6 +7770,10 @@ function printUsage()
     
     for ARGUMENT in ${__ARGUMENTS[*]}
     do
+        if _isHiddenArgument "$ARGUMENT" && ! isVerboseMode
+        then 
+            continue
+        fi
         if isArgumentOptional "$ARGUMENT"
         then
             printf "["
@@ -7826,12 +7868,17 @@ function printHelp()
     
     for ARGUMENT in ${__ARGUMENTS[*]}
     do
+        if _isHiddenArgument "$ARGUMENT" && ! isVerboseMode
+        then 
+            continue;
+        fi
         LONG_NAME=$(getArgumentLongName "$ARGUMENT")
         SHORT_NAME=$(getArgumentShortName "$ARGUMENT")
         ARGUMENT_TYPE=$(getArgumentType $ARGUMENT)
         ARGUMENT_DESCRIPTION=$(addIndentationToStringOnNewLine "$(getArgumentDescription $ARGUMENT)" "                                 ")
         ARGUMENT_TYPE_DESCRIPTION=$(addIndentationToStringOnNewLine "$(getArgumentTypeDescription $ARGUMENT_TYPE)" "                                 ")
         printf "            \033[34;1m"
+        
         if isArgumentType "$ARGUMENT" "bool"
         then 
             if isStringEmpty "$SHORT_NAME"

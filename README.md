@@ -19,9 +19,9 @@ wget -O - https://release.choco-technologies.com/scripts/install-choco-scripts.s
 Once the scripts are installed, they are auto-loaded on bash start and you can start using it. To import it in your script, just add the following line into your project:
 
 
-``bash 
+```bash 
 source $(getChocoScriptsPath)
-``
+```
 ***
 **NOTE:**
 
@@ -132,7 +132,23 @@ My hello-world script based on choco-scripts framework in version 1.0.5
 
 As you can see the framework auto-generated the `--help` message for the script
 
-## Help
+## Help of your script
+
+Once you have created a script by using `createChocoScript` command or by changing of `template.sh` file
+the **choco-scripts** framework will create a help message for you. To show it just type:
+
+```bash
+your-script.sh --help
+```
+
+Please note, that some of special arguments are hidden by default in the help, but
+you can show them as well by using:
+
+```bash
+your-script.sh --verbose --help
+```
+
+## Help about framework functions
 
 The **choco-scripts** project is equipped with a `chocoHelp` command that allows you
 to get a help about a framework functions. 
