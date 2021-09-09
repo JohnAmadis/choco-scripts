@@ -45,7 +45,13 @@ FUNCTIONS_FILE_PATH=$CHOCO_SCRIPTS_PATH/$FUNCTIONS_FILE_NAME
 #
 function getListOfFunctions()
 {
-    cat $FUNCTIONS_FILE_PATH | grep -E '^function\s+[^_]' | sed -E 's/^function\s+(\w+)\(\)/\1/g'
+    local pattern="${1}"
+    if isStringEmpty "$pattern"
+    then 
+        cat $FUNCTIONS_FILE_PATH | grep -E '^function\s+[^_]' | sed -E 's/^function\s+(\w+)\(\)/\1/g'
+    else 
+        cat $FUNCTIONS_FILE_PATH | grep -E '^function\s+[^_]' | grep -E "$pattern" | sed -E 's/^function\s+(\w+)\(\)/\1/g'
+    fi
 }
 
 #
@@ -116,6 +122,7 @@ function prepareScript()
     
     addCommandLineOptionalArgument 'LIST' '--list' bool 'Prints list of supported choco-scripts functions' 'FALSE' ''
     addCommandLineOptionalArgument 'FUNCTION_NAME' '--function-name' options 'Name of the function to print a help for' 'None' "$(echo ${SUPPORTED_FUNCTIONS[*]}) None"
+    addCommandLineOptionalArgument 'SEARCH_TEXT' '--search' string 'Regex pattern to search in a function names' '' 'get.*'
     
     parseCommandLineArguments "$@"
 }
@@ -149,7 +156,10 @@ function printHelpOfFunction()
 #
 function printListOfFunctions()
 {
-    for functionName in ${SUPPORTED_FUNCTIONS[*]}
+    local pattern="$1"
+    local function_names=$(getListOfFunctions "$pattern")
+    function_names=${function_names/\n/ }
+    for functionName in ${function_names[*]}
     do
         printHelpOfFunction "$functionName"
     done 
@@ -164,6 +174,9 @@ prepareScript "$@"
 if isStringEqual "$LIST" "TRUE"
 then 
     printListOfFunctions
+elif ! isStringEmpty "$SEARCH_TEXT"
+then 
+    printListOfFunctions "$SEARCH_TEXT"
 elif ! isStringEqual "$FUNCTION_NAME" "None"
 then
     printf "\n\n"
