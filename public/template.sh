@@ -45,6 +45,7 @@ function prepareScript()
     
     <SCRIPT_ARGUMENTS>
     
+    disableConfigurationPrinting
     parseCommandLineArguments "$@"
 }
 
