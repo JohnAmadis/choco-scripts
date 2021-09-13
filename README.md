@@ -19,9 +19,9 @@ wget -O - https://release.choco-technologies.com/scripts/install-choco-scripts.s
 Once the scripts are installed, they are auto-loaded on bash start and you can start using it. To import it in your script, just add the following line into your project:
 
 
-``bash 
+```bash 
 source $(getChocoScriptsPath)
-``
+```
 ***
 **NOTE:**
 
@@ -94,10 +94,6 @@ You can change here the script description and command line arguments. To unders
 ```bash 
 
 root@76afe4802bf7:/# /tmp/myscript.sh --help
-Hello, Choco scripts are installed in version 1.0.5 in the path /root/.choco-scripts
-Please use command source $(getChocoScriptsPath) to import it in your project
-Using choco-scripts from path /root/.choco-scripts in version 1.0.5
-[ VERIFICATION ] Directory '/tmp' exists?   
 =======================================================================================
                                        HELP                                              
 =======================================================================================
@@ -113,26 +109,6 @@ My hello-world script based on choco-scripts framework in version 1.0.5
 
 
       where:
-
-            --install-required-tool=*
-                       Argument name: __TOOL_TO_INSTALL
-                       Argument type: options
-                       Type description: 
-
-                                 This argument type allows for choosing only from predefined list of supported values
-
-                       Default value: realpath
-                       Value description: 
-
-                                 You can use this option to install tool required by this script
-
-                       Supported values: 
-
-                                 realpath wget unzip sudo htpasswd php parted jq curl
-
-                       Example of usage: 
-
-                                 /tmp/myscript.sh --install-required-tool=realpath
 
             -s=*,--string=*
                        Argument name: EXAMPLE_ARGUMENT
@@ -156,6 +132,90 @@ My hello-world script based on choco-scripts framework in version 1.0.5
 
 As you can see the framework auto-generated the `--help` message for the script
 
+## Help of your script
+
+Once you have created a script by using `createChocoScript` command or by changing of `template.sh` file
+the **choco-scripts** framework will create a help message for you. To show it just type:
+
+```bash
+your-script.sh --help
+```
+
+Please note, that some of special arguments are hidden by default in the help, but
+you can show them as well by using:
+
+```bash
+your-script.sh --verbose --help
+```
+
+## Help about framework functions
+
+The **choco-scripts** project is equipped with a `chocoHelp` command that allows you
+to get a help about a framework functions. 
+
+You can check a list of functions by using `chocoHelp --list` command:
+
+```bash
+
+root@1bb0e346438a:/# chocoHelp --list
+
+     devideAsFloat                                                                   
+                                                                                     
+          Devides 2 floats                                                           
+                                                                                     
+          Function arguments:                                                        
+                                                                                     
+               A                    - Numerator                                      
+               B                    - Denumerator                                    
+
+     ...                                                                                     
+```
+
+You can also search for a functions by using regex pattern:
+
+```bash
+root@1bb0e346438a:/# chocoHelp --search=get
+     getPasswordSha256Encrypted                                                      
+                                                                                     
+          Encrypts password in SHA256                                                
+                                                                                     
+          Function arguments:                                                        
+                                                                                     
+               PASSWORD             - Password to be SHA256 encrypted                
+                                                                                     
+
+     getUnitFromSizeString                                                           
+                                                                                     
+          Returns units from a size string                                           
+                                                                                     
+          Example:                                                                   
+                                                                                     
+          size=20B                                                                   
+          echo $(getUnitFromSizeString "$size")                                      
+                                                                                     
+          This will produce:                                                         
+          B                                                                          
+                                                                                     
+          Function arguments:                                                        
+                                                                                     
+               SIZE                 - String with size, for example: 20B             
+                                                                                     
+```
+
+To find a help of a specified function just use `chocoHelp --function-name`:
+
+```bash
+root@1bb0e346438a:/# chocoHelp --function-name=getDeviceSize
+     getDeviceSize                                                                   
+                                                                                     
+          Returns size of disk device                                                
+                                                                                     
+          Function arguments:                                                        
+                                                                                     
+               DEVICE               - Path to a disk device to get a size for        
+                                                                                     
+
+```
 
 ## License
 

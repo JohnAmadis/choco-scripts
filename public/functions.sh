@@ -3899,6 +3899,44 @@ function isArgumentValueSet()
 
 
 
+#
+#   Checks if the given argument is hidden 
+#
+function _isHiddenArgument()
+{
+    # Name of an argument 
+    local ARGUMENT=$1
+    
+    if [ "${ARGUMENT:0:1}" = _ ]
+    then 
+        return 0
+    else 
+        return 1
+    fi
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if the given argument type is supported 
@@ -7732,6 +7770,10 @@ function printUsage()
     
     for ARGUMENT in ${__ARGUMENTS[*]}
     do
+        if _isHiddenArgument "$ARGUMENT" && ! isVerboseMode
+        then 
+            continue
+        fi
         if isArgumentOptional "$ARGUMENT"
         then
             printf "["
@@ -7826,12 +7868,17 @@ function printHelp()
     
     for ARGUMENT in ${__ARGUMENTS[*]}
     do
+        if _isHiddenArgument "$ARGUMENT" && ! isVerboseMode
+        then 
+            continue;
+        fi
         LONG_NAME=$(getArgumentLongName "$ARGUMENT")
         SHORT_NAME=$(getArgumentShortName "$ARGUMENT")
         ARGUMENT_TYPE=$(getArgumentType $ARGUMENT)
         ARGUMENT_DESCRIPTION=$(addIndentationToStringOnNewLine "$(getArgumentDescription $ARGUMENT)" "                                 ")
         ARGUMENT_TYPE_DESCRIPTION=$(addIndentationToStringOnNewLine "$(getArgumentTypeDescription $ARGUMENT_TYPE)" "                                 ")
         printf "            \033[34;1m"
+        
         if isArgumentType "$ARGUMENT" "bool"
         then 
             if isStringEmpty "$SHORT_NAME"
@@ -8122,6 +8169,80 @@ function verifyRequiredTools()
 
 
 
+#
+#   Enables showing of configuration at the beginning of the script,
+#
+function enableConfigurationPrinting()
+{
+    setArgumentDefaultValue __SHOW_CONFIGURATION TRUE
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Disables showing of configuration at the beginning of the script,
+#
+function disableConfigurationPrinting()
+{
+    setArgumentDefaultValue __SHOW_CONFIGURATION FALSE
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Parses all defined command line arguments
@@ -8202,7 +8323,10 @@ function parseCommandLineArguments()
     done
     
     validateDependencies
-    printConfiguration "${__ARGUMENTS[*]}"
+    if isStringEqual "$__SHOW_CONFIGURATION" "TRUE"
+    then 
+        printConfiguration "${__ARGUMENTS[*]}"
+    fi
 }
 
 __addSupportedArgumentType "int" "A type that allows only for passing integer values" "2832"
@@ -8232,6 +8356,7 @@ addRequiredTool "parted" "Useful tool for managing partitions" "FALSE" "sudo apt
 addRequiredTool "jq" "A tool for parsing of JSON files" "FALSE" "sudo apt-get install -y jq"
 addRequiredTool "curl" "Very useful tool for execution of URL requests" "FALSE" "sudo apt-get install -y curl"
 
+addCommandLineOptionalArgument __SHOW_CONFIGURATION  "--show-configuration" "bool" "If set, the script shows its configuration at the beginning" "TRUE"
 addCommandLineOptionalArgument __TOOL_TO_INSTALL "--install-required-tool" "options" "You can use this option to install tool required by this script" "realpath" "${__REQUIRED_TOOLS[*]}"
 addCommandLineOptionalArgument __INSTALL_ALL_REQUIRED "--install-all-required" "bool" "You can use this argument to install all tools required by the script" "FALSE"
 addCommandLineOptionalArgument __PRINT_REQUIRED_TOOLS_LIST "--print-required-tools" "bool" "Prints list of all tools required by the script with description" "FALSE"
