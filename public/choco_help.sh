@@ -158,7 +158,6 @@ function printListOfFunctions()
 {
     local pattern="$1"
     local function_names=$(getListOfFunctions "$pattern")
-    function_names=${function_names/\n/ }
     for functionName in ${function_names[*]}
     do
         printHelpOfFunction "$functionName"
