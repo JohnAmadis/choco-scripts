@@ -16,13 +16,39 @@ CONFIGURATION_FILE_PATH=~/.choco-scripts.cfg
 SCRIPT_DESCRIPTION=""
 
 #
+#   Installs choco-scripts
+#
+function installChocoScripts()
+{
+    echo "Installation of the choco-scripts"
+
+    # This line installs wget tool - you don't need to use it if you already have it
+    apt-get update && apt-get install -y wget
+
+    # This downloads an installation script and run it 
+    wget -O - https://release.choco-technologies.com/scripts/install-choco-scripts.sh | bash
+}
+
+#
 #   Verification of the choco scripts installation
 #
 if [ -f "$CONFIGURATION_FILE_PATH" ]
 then 
     source $CONFIGURATION_FILE_PATH
 else 
-    printf "\033[31;1mChoco-Scripts are not installed for this user\033[0m\n"
+    printf "\033[31;1mChoco-Scripts are not installed for this user\033[0m\n\n"
+    printf "      \033[37;1mYou can find the installation instruction here: \033[0m\n"
+    printf "            \033[34;1mhttps://bitbucket.org/chocotechnologies/scripts/src/master/\033[0m\n\n"
+
+    while true
+    do
+        read -p "Do you want to try to auto-install it? [Y/n]: " answer
+        case $answer in 
+            [Yy]* ) installChocoScripts; break;;
+            [Nn]* ) echo "Skipping installation"; exit 1;;
+            * ) echo "Please answer Y or n";;
+        esac
+    done
     exit 1
 fi
 
