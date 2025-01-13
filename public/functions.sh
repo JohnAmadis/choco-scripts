@@ -29,43 +29,189 @@ __SUPPORTED_SIZE_UNITS[TB]=$((1024*1024*1024*1024))
 __SCRIPT_NAME=""
 __SCRIPT_DESCRIPTION=""
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Devides 2 floats
 #
 function devideAsFloat()
 {
+    #  Numerator
     local A=$1
+    #  Denumerator
     local B=$2
     echo "$A $B" | awk '{printf "%.2f", $1/$2}'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Says something 
 #
 function say_loud()
 {
+    # Message to print
     local MESSAGE=$1
     spd-say "$MESSAGE"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Encrypts a password to the bcrypt code
 #
 function getPasswordBcryptEncrypted()
 {
+    # Password to be bcrypted
     local PASSWORD=$1
     setToolMandatory "php" 
     php -r "print_r(password_hash('$PASSWORD', PASSWORD_BCRYPT));"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Encrypts password in SHA256
 #
 function getPasswordSha256Encrypted()
 {
+    # Password to be SHA256 encrypted
     local PASSWORD=$1
     /bin/echo -n "$PASSWORD" | sha256sum | awk '{print $1}'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checking if internet is UP
@@ -75,6 +221,35 @@ function isInternetAvailable()
     ping -c 4 google.com 2>&1 > /dev/null
     return $?
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   The function waits for the internet 
@@ -87,19 +262,77 @@ function waitForInternet()
     done
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Compares 2 files
 #
 function areFilesIdentical()
 {
-    if [ ! -e "$1" ] && [ ! -e "$2" ]
+    # Name of first file to compare
+    local fileA=$1
+    # Name of second file to compare
+    local fileB=$2
+    
+    if [ ! -e "$fileA" ] && [ ! -e "$fileB" ]
     then 
         return 0
     else
-        sudo cmp --silent "$1" "$2"
+        sudo cmp --silent "$fileA" "$fileB"
         return $? 
     fi
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #
@@ -107,7 +340,9 @@ function areFilesIdentical()
 #
 function fileContains()
 {
+    # Name of a file to check
     local FILE=$1
+    # Strings to find in the file (parameters 2..9)
     local STRINGS=${@:2}
         
     for string in ${STRINGS[@]}
@@ -122,15 +357,83 @@ function fileContains()
     return 1
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Joins array by delimiter
+#   Joins array by delimiter to a string
 #
-function joinBy 
+function joinBy()
 { 
+    # Delimiter string to use for joining 
+    local delimiter=$1
+    # All the parameters beside the 1st one are joined into one string
+    local arguments=$2
     local IFS="$1"; 
     shift; 
     echo "$*"; 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if the current user is root 
@@ -145,23 +448,140 @@ function isRoot()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Returns units from a size
+#   Returns units from a size string
+#
+#       Example: 
+#
+#           size=20B
+#           echo $(getUnitFromSizeString "$size")
+#
+#       This will produce: 
+#           B
 #
 function getUnitFromSizeString()
 {
+    # String with size, for example: 20B
     local SIZE=$1
     echo $SIZE | sed -r 's/[0-9]+\s*(\w*)/\1/g'
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns a size from a string with size (like '100GB')
 #
+#       Example: 
+#
+#           size=20B
+#           echo $(getSizeFromSizeString "$size")
+#
+#       This will produce: 
+#           100
+#
 function getSizeFromSizeString()
 {
+    # String with size, for example: 20B
     local SIZE_STRING=$1
     echo $SIZE_STRING | sed -r 's/([0-9]+)\s*\w*/\1/g'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns supported size units
@@ -174,6 +594,40 @@ function getSupportedSizeUnits()
     done 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns supported size units in increasing order
 #
@@ -185,6 +639,49 @@ function getSupportedSizeUnitsInIncreasingOrder()
     done | sort -rn -k3 | awk '{print $1}'
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns a list of supported size units joined by a comma
 #
@@ -193,11 +690,51 @@ function getSupportedSizeUnitsString()
     joinBy "," $(getSupportedSizeUnits)
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns number of bytes in the given size unit or 0 if not found
 #   
 function getSizeUnitMultiplier()
 {
+    # Unit of size to return a multiplier
     local UNIT=$1
     
     if isStringEmpty "$UNIT"
@@ -211,20 +748,95 @@ function getSizeUnitMultiplier()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns size of file in bytes
 #
 function getFileSizeInBytes()
 {
-   local FILE_PATH=$1
-   stat --printf="%s" "$FILE_PATH"
+    # PATH to a file to return a size for
+    local FILE_PATH=$1
+    stat --printf="%s" "$FILE_PATH"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns size of file
 #
 function getFileSize()
 {
+    # Path of a file to get a size for
     local FILE_PATH=$1
 
     FILE_SIZE_B=$(stat -c%s "$FILE_PATH")
@@ -249,15 +861,95 @@ function getFileSize()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns MAC address of the given interface 
 #
 function getMac()
 {
+    # Name of interface to get a MAC address for
     local ifname=$1
     ifconfig $ifname 2>&1 | grep HWaddr | sed 's/.*HWaddr \(.*\)$/\1/g' 
     ifconfig eth0 2>&1 | grep ether | sed 's/.*ether \([a-z0-9\:]*\).*$/\1/g'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if verbose mode is enabled
@@ -272,6 +964,44 @@ function isVerboseMode()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Pulls the given file with wget
 #
@@ -285,8 +1015,11 @@ function isVerboseMode()
 #
 function pullFile()
 {
+    # url to get a file from
     local URL="$1"
+    # destination for the file
     local OUTPUT_FILE="$2"
+    # One of the following modes: force, ask, never
     local PULL_MODE="$3"
 
     if fileExists "$OUTPUT_FILE" && ! isStringEqual "$PULL_MODE" "force"
@@ -295,7 +1028,7 @@ function pullFile()
         if isStringEqual "$PULL_MODE" "never" 
         then 
             return 0
-        elif isStringEqual "$PULL_MODE" "ask" && ! printQuestion "The file '$OUTPUT_FILE' already exists (File size: $FILE_SIZE). Do you want to pull it anyway?"
+        elif isStringEqual "$PULL_MODE" "ask" && ! printQuestion "The file '$OUTPUT_FILE' already exists (File size: $FILE_SIZE). Do you want to pull it anyway?" "y"
         then 
             return 0
         fi
@@ -307,11 +1040,50 @@ function pullFile()
     return $?
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given device is available
 #
 function isDeviceAvailable()
 {
+    # Path to a device to check
     local DEVICE_PATH="$1"
     if [ -f "$DEVICE_PATH" ]; 
     then 
@@ -324,12 +1096,54 @@ function isDeviceAvailable()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Writes a given image to the device
 #
 function writeImageToDevice()
 {
+    # Path to a DISK IMAGE to write into a given device
     local IMAGE_PATH="$1"
+    # The path of a device that should be used to write the disk image
     local DEVICE_PATH="$2"
     
     if ! isDeviceAvailable "$DEVICE_PATH"
@@ -342,7 +1156,7 @@ function writeImageToDevice()
         printError "Cannot find image file: '$IMAGE_PATH'"
     fi
     
-    if ! printQuestion "The script is going to override a device '$DEVICE_PATH' - ALL DATA ON THE DEVICE WILL BE LOST! Do you want to continue?"
+    if ! printQuestion "The script is going to override a device '$DEVICE_PATH' - ALL DATA ON THE DEVICE WILL BE LOST! Do you want to continue?" "y"
     then 
         printError "Stopped by a user"
     fi
@@ -364,13 +1178,43 @@ function writeImageToDevice()
     return $?
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Checks if path is writable 
+#   Checks if the given path is writable 
 #
 function isPathWritable()
 {
-    local PATH="$1"
-    if [ -w $PATH ]
+    # Path to a file or directory 
+    local FILE_PATH="$1"
+    if [ -w $FILE_PATH ]
     then 
         return 0
     else
@@ -378,30 +1222,130 @@ function isPathWritable()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Converts integer to binary form
 #
 function toBinary()
 {
+    # Value to be converted to a binary
     local VALUE=$1
     echo "obase=2;$VALUE" | bc
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns file permissions
 #
 function getFilePermissions()
 {
+    # Path to a file to get a permissions for
     local FILE_PATH="$1"
     stat -c %a "$FILE_PATH"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Mounting of device to the given path
 #
 function mountDevice()
 {
+    # A path to a device to mount
     local DEVICE_PATH="$1"
+    # A path where the device should be mounted 
     local MOUNT_PATH="$2"
     
     if ! isDeviceAvailable "$DEVICE_PATH"
@@ -418,11 +1362,55 @@ function mountDevice()
     return $?
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Creates new loop device for the image
+#   It allows to use it for mounting later
 #
 function createLoopDeviceForImage()
 {
+    # Path to a file with disk image
     local IMAGE_PATH="$1"
     
     if ! fileExists "$IMAGE_PATH"
@@ -433,11 +1421,48 @@ function createLoopDeviceForImage()
     doCommandAsStep "Creating new loop device" sudo losetup --show -f -P "$IMAGE_PATH"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns a loop device name for the given image file
 #
 function getLoopDeviceForImage()
 {
+    # Path to a file with disk image 
     local IMAGE_PATH="$1"
     local DEVICES=$(losetup -j "$IMAGE_PATH" -O NAME -n)
     
@@ -457,11 +1482,47 @@ function getLoopDeviceForImage()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Removes loop device of the given image
 #
 function removeLoopDeviceForImage()
 {
+    # Path to a file with disk image
     local IMAGE_PATH=$1
     local DEVICE=$(getLoopDeviceForImage "$IMAGE_PATH")
     
@@ -474,11 +1535,49 @@ function removeLoopDeviceForImage()
     doCommandAsStep "Removing of loop device '$DEVICE'" sudo losetup -d "$DEVICE"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns partitions in the given device
 #
 function getPartitionsInDevice()
 {
+    # Name of a device to check
     local DEVICE="$1"
     
     for PARTITION in "$DEVICE"?*; 
@@ -487,11 +1586,58 @@ function getPartitionsInDevice()
     done
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Reads partition label
 #
 function getPartitionLabel()
 {
+    # Path to a partition to get a label for 
     local PARTITION=$1
     
     VALUES=$(sudo blkid -o value "$PARTITION")
@@ -500,33 +1646,139 @@ function getPartitionLabel()
     echo "$LABEL"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given device is mounted on the given path
 #
 function isMountedOn()
 {
+    # Path to a device 
     local DEVICE_PATH="$1"
+    # Path to a mounted device
     local MOUNT_PATH="$2"
     
     mount | grep "$DEVICE_PATH on $MOUNT_PATH "
     return $?
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the device is mounted
 #
 function isMounted()
 {   
+    # Path to a device to check
     local DEVICE_PATH="$1"
     mount | grep "$DEVICE_PATH"
     return $?
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Waits for unmounting 
+#   Waits for unmounting of a given device
 #
 function waitForUnmount()
 {
+    # A path to a device to be unmounted
     local P=$1
     
     busy=true
@@ -547,42 +1799,196 @@ function waitForUnmount()
     done
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Reads physical sector size
 #
 function getPhysicalSectorSize()
 {
+    # Path to a disk device
     local DEVICE=$1
     
     sudo blockdev --getss $DEVICE
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Returns size of device
+#   Returns size of disk device
 #
 function getDeviceSize()
 {
+    # Path to a disk device to get a size for
     local DEVICE=$1
     
     sudo blockdev --getsize64 $DEVICE
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns size of partition
 #
 function getPartitionSize()
 {
+    # Path to a disk device to get a size for
     local DEVICE=$1
     
     sudo blockdev --getsize64 $DEVICE
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns a partition offset in bytes
 #
 function getPartitionStart()
 {
+    # Path to a disk device
     local DEVICE=$1
+    # Index of a partition in the disk
     local PARTITION_INDEX=$2
     local array
     
@@ -593,6 +1999,37 @@ function getPartitionStart()
     echo ${START%B}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns list of reserved loop devices
 #
@@ -601,14 +2038,80 @@ function getLoopDevices()
     sudo losetup -l | grep -E "/dev/loop" | awk '{print $1}'
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Prepares a list of mounted partitiion devices for the given device
+#   Prepares a list of mounted partition devices for the given device
 #
 function getMountedSubdevices()
 {
+    # Path to a disk device 
     local DEVICE=$1
     sudo mount -l | grep $DEVICE | awk '{print $1}'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Cleans all loop mounts and loop devices
@@ -628,14 +2131,55 @@ function cleanLoopDevices()
     done
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Resizes an image and extends a partition
+#   Resizes a disk image and extends a partition
 #
 function resizeImage()
 {
+    # Path to a disk image file
     local IMAGE_PATH=$1
+    # Name of a partition inside the image file to increase
     local PARTITION_LABEL_TO_INCREASE=$2
+    # Path where the image is mounted
     local MOUNT_PATH=$3
+    # Expected new size for the image 
     local NEW_IMAGE_SIZE=$4
     
     local CURRENT_IMAGE_SIZE=$(getFileSizeInBytes "$IMAGE_PATH")
@@ -689,7 +2233,7 @@ function resizeImage()
             then 
                 if ! doCommandAsStep "Partition '$PARTITION' is already mounted - unmounting" sudo umount $PARTITION
                 then 
-                    if ! printQuestion "We could not unmount device '$PARTITION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of partition on '$PARTITION' with force" sudo umount -l "$PARTITION"
+                    if ! printQuestion "We could not unmount device '$PARTITION' - do we can to use the force?" "y" || ! doCommandAsStep "Unmounting of partition on '$PARTITION' with force" sudo umount -l "$PARTITION"
                     then 
                         printError "Cannot unmount device: '$PARTITION'. If you dont need it, please just unmount and it and remove it then"
                     fi 
@@ -720,12 +2264,41 @@ function resizeImage()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Mounts an image at the given path
 #
 function mountImage()
 {
+    # Path to a disk image
     local IMAGE_PATH=$1
+    # Path where the image should be mounted
     local MOUNT_PATH=$2
     
     if ! fileExists "$IMAGE_PATH"
@@ -758,14 +2331,14 @@ function mountImage()
             then 
                 if ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION'" sudo umount "$DESTINATION"
                 then 
-                    if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
+                    if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" "y" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
                     then 
                         printError "Cannot unmount path: '$DESTINATION'. If you dont need it, please just unmount and it and remove it then"
                     fi
                 fi
             elif ! isDirectoryEmpty "$DESTINATION"
             then 
-                if printQuestion "Directory '$DESTINATION' is not empty. Do you need it?"
+                if printQuestion "Directory '$DESTINATION' is not empty. Do you need it?" "N"
                 then 
                     DESTINATION=$DESTINATION$RANDOM
                 else 
@@ -787,12 +2360,29 @@ function mountImage()
     return 0
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Umounts an image
+#   Umounts an disk image
 #
 function umountImage()
 {
+    # Path to a disk image file
     local IMAGE_PATH=$1
+    # Path where the image is mounted
     local MOUNT_PATH=$2
     
     if ! fileExists "$IMAGE_PATH"
@@ -819,7 +2409,7 @@ function umountImage()
             doCommandAsStepWithSpinner "Waiting with umounting untill not busy" waitForUnmount "$DESTINATION"
             if ! doCommandAsStep "Unmounting of partition '$PARTITION' from '$DESTINATION'" sudo umount "$DESTINATION" && isMountedOn "$PARTITION" "$DESTINATION"
             then 
-                if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
+                if ! printQuestion "We could not unmount path '$DESTINATION' - do we can to use the force?" "y" || ! doCommandAsStep "Unmounting of previous mounted partition on '$DESTINATION' with force" sudo umount -l "$DESTINATION"
                 then 
                     printError "Cannot unmount path: '$DESTINATION'. If you dont need it, please just unmount and it and remove it then"
                 fi
@@ -841,12 +2431,23 @@ function umountImage()
     return 0
 }
 
+
+
+
+
+
+
+
+
+
 #
-#   Extracts archive
+#   Extracts an archive
 #
 function extractFile()
 {
+    # Path to a file to extract
     local INPUT_FILE=$1
+    # Destination directory where the file should be extracted
     local OUTPUT_DIRECTORY=$2
     
     rm -rf "$OUTPUT_DIRECTORY"
@@ -863,12 +2464,24 @@ function extractFile()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
 #
 #   Copying file to the selected destination
 #
 function copyFile()
 {
+    # Name of a source file
     local INPUT_FILE=$1
+    # Name of a destination file
     local OUTPUT_FILE=$2
     
     createDirectory "$(dirname "$OUTPUT_FILE")"
@@ -876,24 +2489,47 @@ function copyFile()
     return $?
 }
 
+
+
+
+
+
+
+
+
 #
 #   Copying directory to the selected destination
 #
 function copyDirectory()
 {
+    # Path to a directory to copy
     local INPUT_DIR=$1
+    # Destination where the directory should be copied to
     local OUTPUT_DIR=$2
     
     createDirectory "$OUTPUT_DIR"
     doCommandAsStepWithSpinner "Copying directory from '$INPUT_DIR' to '$OUTPUT_DIR'" cp -r "$INPUT_DIR" "$OUTPUT_DIR"
 }
 
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Copying file to the selected destination
+#   Copying file to the selected destination as root user
 #
 function copyFileAsRoot()
 {
+    # File to copy
     local INPUT_FILE=$1
+    # Destination for a file
     local OUTPUT_FILE=$2
     
     createDirectory "$(dirname "$OUTPUT_FILE")"
@@ -901,29 +2537,72 @@ function copyFileAsRoot()
     return $?
 }
 
+
+
+
+
+
+
+
+
+
 #
 #   Copying directory to the selected destination as root
 #
 function copyDirectoryAsRoot()
 {
+    # Directory to copy
     local INPUT_DIR=$1
+    # Destination for a directory
     local OUTPUT_DIR=$2
     
     createDirectory "$OUTPUT_DIR"
     doCommandAsStepWithSpinner "Copying directory from '$INPUT_DIR' to '$OUTPUT_DIR' as root" sudo cp -r "$INPUT_DIR" "$OUTPUT_DIR"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Updates value of the variable in bash script
 #
 function updateVariableValueInBashFile()
 {
+    # Name of a bash script file to update
     local FILE_NAME=$1
+    # Name of a variable to set a value
     local VAR_NAME=$2
+    # New value to be set for the variable
     local NEW_VALUE=$3
     printInfo "Setting value of $VAR_NAME in $FILE_NAME to value: $NEW_VALUE\n"
     doCommand sed -i -e "'s/$VAR_NAME=.*$/$VAR_NAME=$NEW_VALUE/g'" "'$FILE_NAME'"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns group ID of current user
@@ -933,23 +2612,63 @@ function getGroupId()
     echo "$(cut -d: -f3 < <(getent group sudo))"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns description of the required tool
 #
 function getRequiredToolDescription()
 {
+    # Name of a tool
     local TOOL=$1
     echo "${__REQUIRED_TOOLS_DESCRIPTIONS[$TOOL]}"
 }
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns installation command for the tool
 #
 function getRequiredToolInstallationCommand()
 {
+    # Name of a tool
     local TOOL=$1
     echo "${__REQUIRED_TOOLS_INSTALLATION_COMMAND[$TOOL]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Adds an argument type to the supported list
@@ -965,11 +2684,26 @@ function __addSupportedArgumentType()
     __ARGUMENT_TYPE_EXAMPLES[$TYPE]="$EXAMPLE"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given command exists
 #
 function commandExists()
 {
+    # Command or tool to check
     local COMMAND=$1
     type "$COMMAND" &> /dev/null
     RESULT=$?
@@ -981,40 +2715,100 @@ function commandExists()
     fi
 }
 
+
+
+
+
+
+
+
+
+
 #
 #   Stash local changes
 #
 function gitStashLocalChanges()
 {
+    # Name of git stash to create
     local STASH_NAME="$1"
     printInfo "Stashing changes to '$STASH_NAME'\n"
     doCommand git stash save "$STASH_NAME"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #    Apply stash with name   
 #
 function gitApplyStashedChanges()
 {
+    # Name of git stash to apply
     local STASH_NAME="$1"
     printInfo "Restoring stashed changes from '$STASH_NAME'"
     doCommand git stash apply stash^{\\$STASH_NAME}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Creates branch name
+#   Creates branch name from a given text
 #
 function createGitBranchName()
 {
+    # A text which will be used to create a branch name 
+    local BRANCH_DESCRIPTION=$1
     local BRANCH_NAME=$(echo "$1" | sed "s/[ ]/_/g" | sed "s/[^-/_a-Z0-9]//g")
     echo "$BRANCH_NAME"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Creates branch in GIT
 #
 function createGitBranch()
 {
+    # A text which will be used to create a branch name 
+    local BRANCH_DESCRIPTION=$1
     local BRANCH_NAME=$(createGitBranchName "$1")
     if isStringEmpty "$BRANCH_NAME"
     then 
@@ -1024,21 +2818,60 @@ function createGitBranch()
     doCommand git checkout -b "$BRANCH_NAME"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Switches to a given branch
 #
 function switchGitBranch()
 {
+    # A text which will be used to create a branch name 
+    local BRANCH_DESCRIPTION=$1
     local BRANCH_NAME=$(createGitBranchName "$1")
     printInfo "Switching to branch $BRANCH_NAME\n"
     doCommand git checkout "$BRANCH_NAME"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Commits currently added changes
 #
 function gitCommit()
 {
+    # Commit message to use
     local MESSAGE="$1"
     local MESSAGE_FILE=".git/commit_message"
     printInfo "Moving message to the temp file $MESSAGE_FILE\n"
@@ -1048,16 +2881,49 @@ function gitCommit()
     printInfo "Commited with message: \n$MESSAGE\n"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Commits all local changes
 #
 function gitCommitAll()
 {
+    # Commit message to use
     local MESSAGE="$1"
     printInfo "Adding all local changes to commit\n"
     doCommand git add ./*
     gitCommit "$MESSAGE"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns last tag from the git repository
@@ -1067,11 +2933,27 @@ function getLastGitTag()
     git describe --tags --abbrev=0 @^
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Removes double slashes from path
 #
 function normalizePath()
 {
+    # Path to normalize 
     local P=$1
     if commandExists "realpath"
     then 
@@ -1081,12 +2963,29 @@ function normalizePath()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the string contains substring 
 #
 function stringContainsSubstring()
 {
+    # String to check
     local STRING=$1
+    # String to find
     local SUBSTRING=$2
     
     if [[ $STRING == *"$SUBSTRING"* ]]
@@ -1097,23 +2996,77 @@ function stringContainsSubstring()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Converts a string to uppercase
 #
 function toUppercase()
 {
+    # String to convert 
     local STR=$1
     echo $STR | awk '{print toupper($0)}'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Converts a string to uppercase
 #
 function toLowercase()
 {
+    # String to convert 
     local STR=$1
     echo $STR | awk '{print tolower($0)}'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Extracts argument from dependency 
@@ -1123,6 +3076,29 @@ function getArgumentFromDependency()
     local DEPENDENCY=$1
     echo "${DEPENDENCY%=*}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Extracts value from dependency 
@@ -1138,38 +3114,129 @@ function getValueFromDependenncy()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns description of an argument type
 #
 function getArgumentTypeDescription()
 {
+    # Argument type to get a description for 
     local TYPE=$1
     echo "${__ARGUMENT_TYPE_DESCRIPTIONS[$TYPE]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns example of an argument type
 #
 function getArgumentTypeExample()
 {
+    # Type of an argument to get an example for 
     local TYPE=$1
     echo "${__ARGUMENT_TYPE_EXAMPLES[$TYPE]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if directory is empty
 #
 function isDirectoryEmpty()
 {
+    # A path to the directory to check
     local P=$1
     [ "$(ls -A $P)" ] && return 1 || return 0
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Creates directory if it does not exists 
 #
 function createDirectory()
 {
+    # Path to a directory which should be created 
     local P=$1
     if doCommandAsVerification "Directory '$P' exists?" directoryExists "$P"
     then 
@@ -1190,11 +3257,38 @@ function createDirectory()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Deletes directory if it exists
 #
 function removeDirectory()
 {
+    # Path to a directory which should be removed 
     local P=$1
     if ! doCommandAsStep "Verification of directory '$P'" directoryExists "$P"
     then 
@@ -1205,65 +3299,173 @@ function removeDirectory()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Removes file if it exists
 #
 function removeFile()
 {
-    local PATH=$1
-    if [ -f $PATH ]
+    # Path to a file to be removed 
+    local P=$1
+    if [ -f $P ]
     then 
-        rm $PATH
+        rm $P
         return $?
     else
         return 0
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Replaces substring in the string
 #
 function replaceInString()
 {
+    # A master string
     local STRING="$1"
+    # A substring to find and replace
     local IN="$2"
+    # A new substring that will be put instead of the IN
     local OUT=$(echo $3 | sed -e 's/\\/\\\\/g; s/\//\\\//g; s/&/\\\&/g')
     echo "$STRING" | sed "s/$IN/$OUT/g"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Replaces all occurrencies of '\n' to new line + intentation
 #
 function addIndentationToStringOnNewLine()
 {
+    # String to parse
     local STRING="$1"
+    # Intentation to insert 
     local INTENTATION="$2"
     
     printf "$STRING" | sed "s/^/$INTENTATION/"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Splits the string by delimiter into an array
 #
 function splitStringByDelimited()
 {
+    # A string to split 
     local STRING=$1
+    # Delimiter to find in the string which should devide the string 
     local DELIMITER=$2
     ARRAY=$(echo "$STRING" | tr "$DELIMITER" " ")
     echo "${ARRAY[*]}"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given value is the expected argument, 
 #   Example: 
 #           BUILD_TYPE=X64
-#           if isStringEqual$BUILD_TYPE x64
+#           if isStringEqual $BUILD_TYPE x64
 #           then
 #               echo "Starting building X64"
 #           fi
 #
 function isStringEqual()
 {
+    # First string to compare
+    local A=$1
+    # Second string to compare
+    local B=$2
+    
     if [[ "${1,,}" == "${2,,}" ]]
     then 
         return 0
@@ -1272,12 +3474,31 @@ function isStringEqual()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Checks if the given string is available in the given array
 #
 function isInArray()
 {
+    # String to find 
     local KEY=$1
+    # Array to search in 
     local ARRAY=$2
     
     for v in ${ARRAY[*]}
@@ -1290,11 +3511,30 @@ function isInArray()
     return 1
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the string is empty
 #
 function isStringEmpty()
 {
+    # String to check
     local STRING=$1
     
     if [[ "$STRING" == "" ]]
@@ -1305,11 +3545,32 @@ function isStringEmpty()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns true if the unit is supported
 #
 function isSizeUnitSupported()
 {
+    # Name of a size unit to check (for example: kB)
     local UNIT=$1
     local SUPPORTED_UNITS=$(getSupportedSizeUnits)
     
@@ -1321,11 +3582,28 @@ function isSizeUnitSupported()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Converts the string to number of bytes
 #
 function toBytes()
 {
+    # String with size to convert into bytes, for example: 100kB
     local SIZE_STRING=$1
     local SIZE=$(getSizeFromSizeString "$SIZE_STRING")
     local UNIT=$(getUnitFromSizeString "$SIZE_STRING")
@@ -1333,11 +3611,29 @@ function toBytes()
     echo $(($SIZE*$MULTIPLIER))
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Converts size in bytes to size string 
 #
 function toSizeString()
 {
+    # Number of bytes 
     local SIZE_B=$1
     
     local SUPPORTED_UNITS=$(getSupportedSizeUnitsInIncreasingOrder)
@@ -1356,27 +3652,73 @@ function toSizeString()
     echo "${SIZE_B} B"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the directory exists 
 #
 function directoryExists()
 {
-    local PATH=$1
-    if [ -d "$PATH" ]
+    # Path to a directory to check
+    local DIRECTORY_PATH=$1
+    if [ -d "$DIRECTORY_PATH" ]
     then 
         return 0
     else 
         return 1
     fi
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if the file exists 
 #
 function fileExists()
 {
-    local PATH=$1
-    if [ -f "$PATH" ]
+    # Path to a file to check 
+    local FILE_PATH=$1
+    if [ -f "$FILE_PATH" ]
     then 
         return 0
     else 
@@ -1384,11 +3726,34 @@ function fileExists()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given value is integer 
 # 
 function isInteger()
 {
+    # Value to check 
     local VALUE=$1
     
     re='^[0-9]+$'
@@ -1401,11 +3766,34 @@ function isInteger()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns first element of an array
 #
 function getFirstElementOfArray()
 {
+    # Array to get an element from 
     local ARRAY=$1
     
     for element in ${ARRAY[*]}
@@ -1415,11 +3803,35 @@ function getFirstElementOfArray()
     done
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given tool is mandatory 
 #
 function isRequiredToolMandatory()
 {
+    # Name of a tool
     local TOOL=$1
     if isStringEqual ${__REQUIRED_TOOLS_MANDATORY[$TOOL]} "TRUE"
     then 
@@ -1429,11 +3841,32 @@ function isRequiredToolMandatory()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if value for the given argument has been set 
 #
 function isArgumentValueSet()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     if isStringEqual "${__ARGUMENT_VALUE_SET[$ARGUMENT]}" "TRUE"
     then 
@@ -1443,11 +3876,74 @@ function isArgumentValueSet()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Checks if the given argument is hidden 
+#
+function _isHiddenArgument()
+{
+    # Name of an argument 
+    local ARGUMENT=$1
+    
+    if [ "${ARGUMENT:0:1}" = _ ]
+    then 
+        return 0
+    else 
+        return 1
+    fi
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given argument type is supported 
 #   
 function isArgumentTypeSupported()
 {
+    # Type of an argument to check 
     local ARGUMENT_TYPE=$1
     if isInArray "$ARGUMENT_TYPE" "${__SUPPORTED_ARGUMENT_TYPES[*]}"
     then 
@@ -1457,11 +3953,72 @@ function isArgumentTypeSupported()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Prints all the supported argument types
+#
+function getSupportedArgumentTypes()
+{
+    echo "${__SUPPORTED_ARGUMENT_TYPES[*]}"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the given argument has been added to the supported list
 #
 function isKnownArgument()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     if isInArray "$ARGUMENT" "${__ARGUMENTS[*]}"
     then 
@@ -1471,11 +4028,35 @@ function isKnownArgument()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Checks if the given argument is required argument 
 #
 function isArgumentRequired()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     if isInArray "$ARGUMENT" "${__REQUIRED_ARGUMENTS[*]}"
     then 
@@ -1485,11 +4066,29 @@ function isArgumentRequired()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Checks if the given argument is optional 
 #
 function isArgumentOptional()
 {
+    # Checks if the argument is optional 
     local ARGUMENT=$1
     if ! isArgumentRequired "$ARGUMENT"
     then 
@@ -1499,11 +4098,27 @@ function isArgumentOptional()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the argument type is set and if it is supported 
 #   
 function isArgumentTypeSet()
 {
+    # Name of an argument type
     local ARGUMENT=$1
     TYPE=$(getArgumentType $ARGUMENT)
     if [[ "$TYPE" == "" ]]
@@ -1519,22 +4134,58 @@ function isArgumentTypeSet()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Returns argument type 
 #       Usage: ARGUMENT_TYPE=$(getArgumentType ARGUMENT)
 #
 function getArgumentType()
 {
+    # Name of an argument type 
     local ARGUMENT=$1
     echo "${__ARGUMENT_TYPES[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if the given argument is equal to the expected type
 # 
 function isArgumentType()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Name of the argument type 
     local TYPE=$2
     
     if ! isArgumentTypeSupported $TYPE
@@ -1550,15 +4201,63 @@ function isArgumentType()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns argument description 
 #       Usage: DESCRIPTION=$(getArgumentDescription ARGUMENT)
 #
 function getArgumentDescription()
 {
+    # Name of an argument 
     local ARGUMENT=$1 
     echo "${__ARGUMENT_DESCRIPTIONS[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 
 #   Returns list of supported values for the given argument 
@@ -1566,42 +4265,129 @@ function getArgumentDescription()
 #
 function getArgumentSupportedValues()
 {
+    # Name of an argument 
     local ARGUMENT=$1 
     echo "${__ARGUMENT_SUPPORTED_VALUES[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns regular expression for the argument
 #
 function getArgumentRegularExpression()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     echo "${__ARGUMENT_REGULAR_EXPRESSIONS[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns long name of the argument 
 #
 function getArgumentLongName()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     echo "${__ARGUMENT_LONG_NAMES[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns long name of the argument 
 #
 function getArgumentShortName()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     echo "${__ARGUMENT_SHORT_NAMES[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if the long name for the given argument has been set 
 #
 function isArgumentLongNameSet()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     if isStringEmpty "$(getArgumentLongName $ARGUMENT)"
     then
@@ -1611,11 +4397,34 @@ function isArgumentLongNameSet()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the long name for the given argument has been set 
 #
 function isArgumentShortNameSet()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     if isStringEmpty "$(getArgumentShortName $ARGUMENT)"
     then 
@@ -1625,11 +4434,38 @@ function isArgumentShortNameSet()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns long argument name or short if the long is not set 
 #
 function getArgumentName()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     if isArgumentLongNameSet "$ARGUMENT" 
     then 
@@ -1642,38 +4478,123 @@ function getArgumentName()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Returns default value for the argument 
 #
 function getArgumentDefaultValue()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     echo "${__ARGUMENT_DEFAULT_VALUES[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns default value for the argument 
 #
 function getArgumentExampleValue()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     echo "${__ARGUMENT_EXAMPLE_VALUES[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Returns argument dependencies 
 #
 function getArgumentDependencies()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     echo "${__ARGUMENT_DEPENDENCIES[$ARGUMENT]}"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Checks if the argument has dependencies 
 #
 function argumentHasDependencies()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     DEPENDENCIES=$(getArgumentDependencies $ARGUMENT)
     
@@ -1685,12 +4606,36 @@ function argumentHasDependencies()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Checks if the value of the given argument is equal to the expected one
 #
 function isArgumentValueEqualTo()
 {
+    # Name of an argument 
     local ARGUMENT=$1
+    # Expected value of the argument 
     local EXPECTED_VALUE=$2
     local VALUE
     
@@ -1722,11 +4667,45 @@ function isArgumentValueEqualTo()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   validates if all dependencies are passed 
 #
 function validateArgumentDependencies()
 {
+    # Name of an argument 
     local ARGUMENT=$1
     
     if ! isArgumentValueSet "$ARGUMENT"
@@ -1750,38 +4729,76 @@ function validateArgumentDependencies()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Validates all argument dependencies 
 #
 function validateDependencies()
 {
     local ARGUMENT
-    for ARGUMENT in ${__ARGUMENTS[*]}
+    for ARGUMENT in ${__ARGUMENTS[*]}10
     do
         validateArgumentDependencies "$ARGUMENT"
     done
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #   
 #   Checks if the given value of argument is valid
 #
 function validateArgumentValue()
 {
+    # Name of an argument 
     local ARGUMENT=$1
+    # Value of the argument to validate 
     local VALUE=$2
+    local FINISH_SCRIPT=${3:-"TRUE"}
     
     ARGUMENT_TYPE=$(getArgumentType $ARGUMENT)
     
     if ! isArgumentTypeSet $ARGUMENT 
     then 
-        printError "Type ($(getArgumentType $ARGUMENT)) for argument '$ARGUMENT' is not set or not supported."
+        printError "Type ($(getArgumentType $ARGUMENT)) for argument '$ARGUMENT' is not set or not supported." "$FINISH_SCRIPT"
+        return 1
     elif isArgumentType "$ARGUMENT" "int"
     then
         if isInteger "$VALUE"
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be an integer!"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be an integer!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "size"
@@ -1791,11 +4808,11 @@ function validateArgumentValue()
         SIZE=$(getSizeFromSizeString "$VALUE")
         if [[ ! "$VALUE" =~ ^$REGULAR_EXPRESSION ]]
         then 
-            printError "The given value: '$VALUE' is not valid for argument $(getArgumentName $ARGUMENT) - it has to be positive integer with units like: 100GB"
+            printError "The given value: '$VALUE' is not valid for argument $(getArgumentName $ARGUMENT) - it has to be positive integer with units like: 100GB" "$FINISH_SCRIPT"
             return 1
         elif ! isSizeUnitSupported "$UNIT"
         then 
-            printError "The given size unit: '$UNIT' is not supported. The supported ones: $(getSupportedSizeUnitsString)" 
+            printError "The given size unit: '$UNIT' is not supported. The supported ones: $(getSupportedSizeUnitsString)" "$FINISH_SCRIPT"
             return 1
         elif [[ $(toBytes "$VALUE") -lt 0 ]]
         then 
@@ -1809,7 +4826,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be a bool!"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) has to be a bool!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "options"
@@ -1817,12 +4834,12 @@ function validateArgumentValue()
         SUPPORTED_VALUES=$(getArgumentSupportedValues $ARGUMENT)
         if isStringEmpty "$VALUE"
         then 
-            printError "Argument $(getArgumentName $ARGUMENT) cannot be empty. Supported values: $(getArgumentSupportedValues $ARGUMENT)"
+            printError "Argument $(getArgumentName $ARGUMENT) cannot be empty. Supported values: $(getArgumentSupportedValues $ARGUMENT)" "$FINISH_SCRIPT"
         elif isInArray "$VALUE" "${SUPPORTED_VALUES[*]}"
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not supported! Supported values: $(getArgumentSupportedValues $ARGUMENT)"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not supported! Supported values: $(getArgumentSupportedValues $ARGUMENT)" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "regex"
@@ -1832,7 +4849,8 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) does not match regular expression: '$REGULAR_EXPRESSION'"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) does not match regular expression: '$REGULAR_EXPRESSION'" "$FINISH_SCRIPT"
+            return 1
         fi 
     elif isArgumentType "$ARGUMENT" "ip"
     then
@@ -1841,7 +4859,8 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not valid IP! Only IPv4 is supported in range: 0.0.0.0-255.255.255.255"
+            printError "The given value: '$VALUE' for the argument $(getArgumentName $ARGUMENT) is not valid IP! Only IPv4 is supported in range: 0.0.0.0-255.255.255.255" "$FINISH_SCRIPT"
+            return 1
         fi 
     elif isArgumentType "$ARGUMENT" "new_directory"
     then
@@ -1852,7 +4871,7 @@ function validateArgumentValue()
             then 
                 return 0
             else
-                printError "The given path: '$VALUE' for the argument $(getArgumentName $ARGUMENT) already exists and cannot be removed"
+                printError "The given path: '$VALUE' for the argument $(getArgumentName $ARGUMENT) already exists and cannot be removed" "$FINISH_SCRIPT"
                 return 1
             fi
         fi
@@ -1861,7 +4880,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "Cannot create directory: '$VALUE' for the argument $(getArgumentName $ARGUMENT)"
+            printError "Cannot create directory: '$VALUE' for the argument $(getArgumentName $ARGUMENT)" "$FINISH_SCRIPT"
             return 1
         fi
     
@@ -1871,7 +4890,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given directory: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!"
+            printError "The given directory: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "directory"
@@ -1884,7 +4903,7 @@ function validateArgumentValue()
             then 
                 return 0
             else
-                printError "Directory: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created!"
+                printError "Directory: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created!" "$FINISH_SCRIPT"
                 return 1
             fi
         fi
@@ -1895,7 +4914,7 @@ function validateArgumentValue()
             printWarning "The given path: '$VALUE' for the argument $(getArgumentName $ARGUMENT) already exists - it will be removed"
             if ! removeFile "$VALUE"
             then 
-                printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) already exists and cannot be removed"
+                printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) already exists and cannot be removed" "$FINISH_SCRIPT"
                 return 1
             fi
         fi
@@ -1905,7 +4924,7 @@ function validateArgumentValue()
         then 
             return 0
         else
-            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created"
+            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created" "$FINISH_SCRIPT"
             return 1
         fi 
     elif isArgumentType "$ARGUMENT" "existing_file"
@@ -1914,7 +4933,7 @@ function validateArgumentValue()
         then 
             return 0
         else 
-            printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!"
+            printError "The given file: '$VALUE' required for argument $(getArgumentName $ARGUMENT) does not exist!" "$FINISH_SCRIPT"
             return 1
         fi
     elif isArgumentType "$ARGUMENT" "existing_files"
@@ -1922,14 +4941,14 @@ function validateArgumentValue()
         EXISTING_FILES="$(splitStringByDelimited "$VALUE" ":")"
         if [ ${#EXISTING_FILES[@]} -eq 0 ]
         then 
-            printError "Array with existing files given for '$ARGUMENT' cannot be empty!"
+            printError "Array with existing files given for '$ARGUMENT' cannot be empty!" "$FINISH_SCRIPT"
             return 1
         fi
         for file in ${EXISTING_FILES[*]}
         do 
             if ! fileExists "$file"
             then 
-                printError "The file: '$file' given for '$ARGUMENT' does not exist!"
+                printError "The file: '$file' given for '$ARGUMENT' does not exist!" "$FINISH_SCRIPT"
                 return 1
             fi
         done
@@ -1941,14 +4960,14 @@ function validateArgumentValue()
         then 
             return 0
         else
-            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created"
+            printError "Parent directory: '$PARENT_DIR' for the path: '$VALUE' for argument $(getArgumentName $ARGUMENT) does not exist and cannot be created" "$FINISH_SCRIPT"
             return 1
         fi 
     elif isArgumentType "$ARGUMENT" "not_empty_string"
     then
         if isStringEmpty "$VALUE"
         then 
-            printError "The given string: '$VALUE' for argument: $(getArgumentName $ARGUMENT) cannot be empty!"
+            printError "The given string: '$VALUE' for argument: $(getArgumentName $ARGUMENT) cannot be empty!" "$FINISH_SCRIPT"
             return 1
         else 
             return 0
@@ -1960,16 +4979,35 @@ function validateArgumentValue()
     then
         return 0
     else 
-        printError "Unexpected argument type: $ARGUMENT_TYPE"
+        printError "Unexpected argument type: $ARGUMENT_TYPE" "$FINISH_SCRIPT"
+        return 1
     fi 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Prints error message and exits from the script
 #
 function printError()
 {
+    # Message to print 
     local MESSAGE=$1
+    # <optional> If true, the script will be finished 
     local FINISH_SCRIPT=$2
     printf "\033[31;1m[ ERROR ] $MESSAGE\n\033[0m"
     if isStringEmpty "$FINISH_SCRIPT" || isStringEqual "$FINISH_SCRIPT" "TRUE"
@@ -1979,38 +5017,111 @@ function printError()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Prints warning message 
 #
 function printWarning()
 {
-    printf "\033[33;1m[ WARNING ] $1\n\033[0m"
+    # Message to print 
+    local MESSAGE=$1
+    printf "\033[33;1m[ WARNING ] $MESSAGE\n\033[0m"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Prints info message
 #
 function printInfo()
 {
-    printf "\033[36;1m[ INFO ] \033[0;1m$1\033[0m"
+    # Message to print 
+    local MESSAGE=$1
+    printf "\033[36;1m[ INFO ] \033[0;1m$MESSAGE\033[0m"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Prints step message
 #
 function printStep()
 {
+    # Message to print 
+    local MESSAGE=$1
+    
     COLUMNS=$(tput cols)
     let MESSAGE_SIZE=$COLUMNS-38
-    printf "\033[36;1m[ STEP ] \033[0;1m%-${MESSAGE_SIZE}s ... \033[39;1m[ \033[s       \033[39;1m]\033[u" "$1"
+    printf "\033[36;1m[ STEP ] \033[0;1m%-${MESSAGE_SIZE}s ... \033[39;1m[ \033[s       \033[39;1m]\033[u" "$MESSAGE"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Prints step result 
 #
 function printStepResult()
 {
+    # Result of the step to print 
     local RESULT=$1
+    # Details about the failure 
     local DEATAILS=$2
     if [ $RESULT -eq 0 ]
     then 
@@ -2027,22 +5138,57 @@ function printStepResult()
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Prints verification message
 #
 function printVerification()
 {
+    # Message to print 
+    local MESSAGE=$1
     COLUMNS=$(tput cols)
     let MESSAGE_SIZE=$COLUMNS-46
-    printf "\033[36;1m[ VERIFICATION ] \033[0;1m%-${MESSAGE_SIZE}s ... \033[39;1m\033[s       \033[u" "$1"
+    printf "\033[36;1m[ VERIFICATION ] \033[0;1m%-${MESSAGE_SIZE}s ... \033[39;1m\033[s       \033[u" "$MESSAGE"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Prints verification result 
 #
 function printVerificationResult()
 {
+    # Result of the verification
     local RESULT=$1
+    # Details about the failure 
     local DEATAILS=$2
     if [ $RESULT -eq 0 ]
     then 
@@ -2058,57 +5204,440 @@ function printVerificationResult()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Prints simple question with y/N answers and returns user result
 #
 function printQuestion()
 {
+    # Question to ask to the user 
     local QUESTION=$1
     local RESULT=1
+    # Default answer to use in non interactive mode 
+    local DEFAULT=$2
     
-    while 
-        printf "\033[35;1m[ QUESTION ]\033[0m $QUESTION [y/N]: "
-        read RESPONSE
-        if isStringEqual "$RESPONSE" "y"
-        then
-            return 0
-        elif isStringEqual "$RESPONSE" "N"
-        then 
-            return 1
-        fi
-    do
-        :
-    done
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while 
+            printf "\033[35;1m[ QUESTION ]\033[0m $QUESTION [y/N]: "
+            read RESPONSE
+            if isStringEqual "$RESPONSE" "y"
+            then
+                return 0
+            elif isStringEqual "$RESPONSE" "N"
+            then 
+                return 1
+            fi
+        do
+            :
+        done
+    elif isStringEmpty "$DEFAULT"
+    then 
+        return 0
+    elif isStringEqual "$DEFAULT" "y"
+    then 
+        return 0
+    elif isStringEqual "$DEFAULT" "N"
+    then 
+        return 1
+    else 
+        return $DEFAULT
+    fi
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Converts the string name to the variable name
+#
+function toVariableName()
+{
+    # Name of an argument 
+    local argumentName=$1
+    echo "${argumentName^^}" | sed -r 's/ /_/g' | sed -r 's/[^a-zA-Z0-9_]//g'
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Converts the string name to the script argument name
+#
+function toScriptArgument()
+{
+    # Name of an argument 
+    local argumentName=$1
+    echo "--${argumentName,,}" | sed -r 's/ /-/g' | sed -r 's/[^a-zA-Z0-9-]//g'
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Prints question with string answer and returns 0 if success
 #
 function printQuestionWithStringAnswer()
 {
+    # Question to ask to a user 
     local __QUESTION="$1"
+    # Name of a variable where the user response should be stored 
     local __VAR_NAME="$2"
+    # Default answer 
+    local __DEFAULT="$3"
     local __RESPONSE=""
-    while
-        printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type #exit to cancel ]: "
-        read __RESPONSE
-        if isStringEqual "$__RESPONSE" "#exit"
-        then 
-            return 1
-        elif ! isStringEmpty "$__RESPONSE"
-        then 
-            eval $__VAR_NAME="'$__RESPONSE'"
-            return 0
-        fi
-    do
-        :
-    done
+    local default_description=""
+    if ! isStringEmpty "$__DEFAULT"
+    then 
+        default_description=" (\033[37;1mdefault:\033[0m \033[36;1m$__DEFAULT\033[0m)"
+    fi
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while
+            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type \033[35;1m#exit\033[0m to cancel ]$default_description: "
+            read __RESPONSE
+            if isStringEqual "$__RESPONSE" "exit" && printQuestion "Do you want to exit? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                return 1
+            elif isStringEqual "$__RESPONSE" "#exit"
+            then 
+                return 1
+            elif ! isStringEmpty "$__RESPONSE"
+            then 
+                eval $__VAR_NAME="'$__RESPONSE'"
+                printf "\033[37;1mYour answer:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                return 0
+            elif ! isStringEmpty "$__DEFAULT"
+            then 
+                eval $__VAR_NAME="'$__DEFAULT'"
+                printf "\033[37;1mUsing default:\033[0m \033[36;1m$__DEFAULT\033[0m\n"
+                return 0
+            fi
+        do
+            :
+        done
+    elif isStringEmpty "$__DEFAULT"
+    then 
+        printError "Cannot skip the question - the default value is empty"
+    else 
+        eval $__VAR_NAME="'$__DEFAULT'"
+        return 0
+    fi
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Prints question with string answer and returns 0 if success
+#   The function calls the validator function if the value is given
+#
+function printQuestionWithValidator()
+{
+    # Question to ask
+    local __QUESTION="$1"
+    # Name of a variable where the response should be stored 
+    local __VAR_NAME="$2"
+    # Name of a function to use for validation of the response 
+    local __VALIDATOR_FUNCTION="$3"
+    # Default response 
+    local __DEFAULT="$4"
+    local __RESPONSE=""
+    local default_description=""
+    if ! isStringEmpty "$__DEFAULT"
+    then 
+        default_description=" (\033[37;1mdefault:\033[0m \033[36;1m$__DEFAULT\033[0m)"
+    fi
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while
+            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type \033[35;1m#exit\033[0m to cancel ]$default_description: "
+            read __RESPONSE
+            if isStringEqual "$__RESPONSE" "exit" && printQuestion "Do you want to exit? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                return 1
+            elif isStringEqual "$__RESPONSE" "#exit"
+            then 
+                return 1
+            elif ! $__VALIDATOR_FUNCTION "$__RESPONSE"
+            then 
+                printf "\033[33;1mThe given value is not supported: $__RESPONSE\033[0m\n"
+            elif ! isStringEmpty "$__RESPONSE"
+            then 
+                eval $__VAR_NAME="'$__RESPONSE'"
+                printf "\033[37;1mYour answer:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                return 0
+            elif ! $__VALIDATOR_FUNCTION "$__DEFAULT"
+            then 
+                printError "The default value is invalid"
+            elif ! isStringEmpty "$__DEFAULT"
+            then 
+                eval $__VAR_NAME="'$__DEFAULT'"
+                printf "\033[37;1mUsing default:\033[0m \033[36;1m$__DEFAULT\033[0m\n"
+                return 0
+            fi
+        do
+            :
+        done
+    elif isStringEmpty "$__DEFAULT"
+    then 
+        printError "Cannot skip the question - the default value is empty"
+    elif ! $__VALIDATOR_FUNCTION "$__DEFAULT"
+    then 
+        printError "The default value is invalid"
+    else 
+        eval $__VAR_NAME="'$__DEFAULT'"
+        return 0
+    fi
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Prints question with string answer and returns 0 if success
+#
+function printQuestionWithEnumAnswer()
+{
+    # Question to ask
+    local __QUESTION="$1"
+    # Name of a variable where the response should be stored 
+    local __VAR_NAME="$2"
+    # Array with supported answers seperated by a space 
+    local __SUPPORTED_VALUES="$3"
+    # Default answer 
+    local __DEFAULT=$4
+    local __RESPONSE=""
+    local default_description=""
+    if ! isStringEmpty "$__DEFAULT"
+    then 
+        default_description=" (\033[37;1mdefault:\033[0m \033[36;1m$__DEFAULT\033[0m)"
+    fi
+    if isStringEqual "$NON_INTERACTIVE" "FALSE"
+    then 
+        while
+            printf "\033[35;1m[ QUESTION ]\033[0m $__QUESTION [ Type \033[35;1m#exit\033[0m to cancel or \033[35;1m#help\033[0m to get a list of supported values ]$default_description: "
+            read __RESPONSE
+            if isStringEqual "$__RESPONSE" "exit" && printQuestion "Do you want to exit? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                return 1
+            elif isStringEqual "$__RESPONSE" "help" && printQuestion "Do you want to print help? (If you say \033[37;1mno\033[0m, the value \033[36;1m$__RESPONSE\033[0m will be used as answer for the last question)"
+            then 
+                printf "\033[37;1mList of supported values: \n"
+                for supported_value in ${__SUPPORTED_VALUES[*]}
+                do 
+                    printf "\t\033[36;1m$supported_value\033[0m\n"
+                done
+            elif isStringEqual "$__RESPONSE" "#help"
+            then
+                printf "\033[37;1mList of supported values: \n"
+                for supported_value in ${__SUPPORTED_VALUES[*]}
+                do 
+                    printf "\t\033[36;1m$supported_value\033[0m\n"
+                done
+            elif isStringEqual "$__RESPONSE" "#exit"
+            then 
+                return 1
+            elif ! isStringEmpty "$__RESPONSE"
+            then 
+                if isInArray "$__RESPONSE" "${__SUPPORTED_VALUES[*]}"
+                then 
+                    eval $__VAR_NAME="'$__RESPONSE'"
+                    printf "\033[37;1mYour answer:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                    return 0
+                else 
+                    printf "\033[33;1mThe given value is not supported:\033[0m \033[36;1m$__RESPONSE\033[0m\n"
+                fi
+            elif ! isStringEmpty "$__DEFAULT"
+            then 
+                eval $__VAR_NAME="'$__DEFAULT'"
+                printf "\033[37;1mUsing default:\033[0m \033[36;1m$__DEFAULT\033[0m\n"
+                return 0
+            fi
+        do
+            :
+        done
+    elif isStringEmpty "$__DEFAULT"
+    then 
+        printError "Cannot skip the question - the default value is empty"
+    else 
+        eval $__VAR_NAME="'$__DEFAULT'"
+        return 0
+    fi
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Stores PID of last started spinned
 #
 export __SPINNER_PID=0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Process for printing of spinner 
 #   
@@ -2126,6 +5655,32 @@ function __spin()
   done
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Starts printing of spinner at current position
 #
@@ -2139,6 +5694,39 @@ function startSpinner()
     #trap "kill -9 $__SPINNER_PID 2>&1 > /dev/null" `seq 0 15`
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Stops printing of spinner 
 #
@@ -2148,12 +5736,35 @@ function stopSpinner()
     kill -PIPE $__SPINNER_PID 2>&1 >/dev/null
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Begins step
 #
 function beginStep()
 {
+    # Name of step message to print 
     local MESSAGE=$1
+    # If true, the spinner will be shown during the command execution 
     local WITH_SPINNER=$2
     printStep "$MESSAGE"
     if isStringEqual "$WITH_SPINNER" "TRUE"
@@ -2162,14 +5773,45 @@ function beginStep()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Finishes step
 #
 function finishStep()
 {
+    # Result of the step 
     local RESULT=$1
+    # Details about the failure 
     local DETAILS=$2
+    # If true, the spinner was shown 
     local WITH_SPINNER=$3
+    # Executed command 
     local COMMAND=$4
     if isStringEqual "$WITH_SPINNER" "TRUE"
     then 
@@ -2178,12 +5820,38 @@ function finishStep()
     printStepResult $RESULT "$DETAILS Command: '$COMMAND'" 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Begins verification
 #
 function beginVerification()
 {
+    # Message to print 
     local MESSAGE=$1
+    # If true the spinner will be shown during the command execution 
     local WITH_SPINNER=$2
     printVerification "$MESSAGE"
     if isStringEqual "$WITH_SPINNER" "TRUE"
@@ -2192,13 +5860,37 @@ function beginVerification()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Finishes verification
 #
 function finishVerification()
 {
+    # Result of the verification 
     local RESULT=$1
+    # Details about the failure 
     local DETAILS=$2
+    # If true the spinner was shown during the command execution 
     local WITH_SPINNER=$3
     if isStringEqual "$WITH_SPINNER" "TRUE"
     then 
@@ -2206,6 +5898,39 @@ function finishVerification()
     fi
     printVerificationResult $RESULT "$DETAILS"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Prints current configuration
@@ -2231,14 +5956,45 @@ function printConfiguration()
     echo "========================================================="
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Adds required tool to the list
 #
 function addRequiredTool()
 {
+    # Name of a tool to add 
     local TOOL=$1
+    # Description how the tool is used
     local NEED_DESCRIPTION=$2
+    # If true, the tool is mandatory and script cannot work without it 
     local MANDATORY=$3
+    # Command to use to install the tool 
     local INSTALLATION_COMMAND=$4
     
     if isStringEmpty "$TOOL"
@@ -2267,11 +6023,32 @@ function addRequiredTool()
     __REQUIRED_TOOLS_INSTALLATION_COMMAND[$TOOL]=$INSTALLATION_COMMAND
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets tool as mandatory
 #
 function setToolMandatory()
 {
+    # Name of a tool to set as mandatory 
     local TOOL=$1
     
     __REQUIRED_TOOLS_MANDATORY[$TOOL]="TRUE"
@@ -2279,12 +6056,31 @@ function setToolMandatory()
     verifyRequiredTools
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   The function installs the required tool
 #
 function installRequiredTool()
 {
+    # Name of a tool 
     local TOOL=$1
+    # If TRUE, the installation has been already accepted 
     local ACCEPTED=$2
     
     if commandExists "$TOOL"
@@ -2314,7 +6110,7 @@ function installRequiredTool()
     
     if ! isStringEqual "$ACCEPTED" "TRUE"
     then 
-        if printQuestion "Do you want to continue installation of tool '$TOOL'?"
+        if printQuestion "Do you want to continue installation of tool '$TOOL'?" "y"
         then 
             ACCEPTED="TRUE"
         else
@@ -2330,6 +6126,28 @@ function installRequiredTool()
     $COMMAND
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Reads parameter from JSON
 #
@@ -2337,21 +6155,77 @@ function installRequiredTool()
 #
 function readFromJson()
 {
+    # JSON string to parse
     local JSON=$1
+    # Name of a json field 
     local PARAM_NAME=$2
     setToolMandatory "jq"
     echo "$JSON" | jq -r ".$PARAM_NAME"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Reads list of keys available in the given json
 #
 function readKeysFromJson()
 {
+    # JSON string 
     local JSON=$1
     setToolMandatory "jq"
     echo "$JSON" | jq -r 'keys[] as $k | "\($k)"'
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Reads array with the given name from the json
@@ -2362,7 +6236,9 @@ function readKeysFromJson()
 #
 function readArrayFromJson()
 {
+    # JSON string 
     local JSON=$1
+    # name of a field in the json 
     local PARAM_NAME=$2
     
     setToolMandatory "jq"
@@ -2375,6 +6251,35 @@ function readArrayFromJson()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   The function installs all required tools
 #
@@ -2385,14 +6290,14 @@ function installAllRequiredTools()
     
     if ! isRoot
     then 
-        if ! printQuestion "We have detected, that you are not logged as root. To avoid passing a password to all the commands separately, we propose you to use 'sudo su' command before the script. Do you want to continue anyway?"
+        if ! printQuestion "We have detected, that you are not logged as root. To avoid passing a password to all the commands separately, we propose you to use 'sudo su' command before the script. Do you want to continue anyway?" "y"
         then 
             printInfo "Closing the script.\n"
             exit 0;
         fi
     fi
     
-    if printQuestion "Do you want to accept the installation of all tools at once?"
+    if printQuestion "Do you want to accept the installation of all tools at once?" "y"
     then 
         ACCEPTED="TRUE"
     fi
@@ -2412,6 +6317,35 @@ function installAllRequiredTools()
     printInfo "Installation finished\n"
     exit 0
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   The function prints list of all tools required by the script
@@ -2436,8 +6370,48 @@ function printAllRequiredToolsList()
     exit 0
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   The function performs a command, with support of verbose mode
+#   By default it hides the output of the command and only returns 
+#   the result of the command instead. 
+#   If the verbose mode is enabled (--verbose flag is set)
+#   the output of the command is printed to stdout 
 #
 function doCommand()
 {
@@ -2460,12 +6434,46 @@ function doCommand()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   The function performs a command, with support of verbose mode
+# 
+#   By default it hides the output of the command and prints only 
+#   a result of the command in format:
+#   <command description> ... OK/FAILED
+#
+#   If the verbose mode is enabled (--verbose flag is set)
+#   the output of the command is printed to stdout 
 #
 function doCommandAsStep()
 {
+    # Description of the executed command
     local DESCRIPTION="$1"
+    # Command to execute 
+    local CMD=$2
     local COMMAND=${@:2}
     if isVerboseMode
     then 
@@ -2482,12 +6490,42 @@ function doCommandAsStep()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   The function performs a command, with support of verbose mode
+#   It is very similar to doCommandAsStep, but it prints 
+#   spinner during command execution 
+# 
+#   By default it hides the output of the command and prints only 
+#   a result of the command in format:
+#   <command description> ... OK/FAILED
+#
+#   If the verbose mode is enabled (--verbose flag is set)
+#   the output of the command is printed to stdout 
 #
 function doCommandAsStepWithSpinner()
 {
+    # Description of the executed command
     local DESCRIPTION="$1"
+    # Command to execute 
+    local CMD=$2
     local COMMAND=${@:2}
     if isVerboseMode
     then 
@@ -2505,12 +6543,51 @@ function doCommandAsStepWithSpinner()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#  The function performs a command with support of verification mode
+#   The function performs a command with support of verification mode
+#
+#   By default it hides the output of the command and prints only 
+#   a result of the command in format:
+#   <command description> ... YES/NO
+#
+#   If the verbose mode is enabled (--verbose flag is set)
+#   the output of the command is printed to stdout 
 #
 function doCommandAsVerification()
 {
+    # Description of the executed command
     local DESCRIPTION="$1"
+    # Command to execute 
+    local CMD=$2
     local COMMAND=${@:2}
     if isVerboseMode
     then 
@@ -2525,8 +6602,44 @@ function doCommandAsVerification()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   The function performs a command, with support of verbose mode
+#
+#   It is very similar to doCommandAsVerification, but it prints 
+#   spinner during command execution 
+# 
+#   By default it hides the output of the command and prints only 
+#   a result of the command in format:
+#   <command description> ... YES/NO
+#
+#   If the verbose mode is enabled (--verbose flag is set)
 #
 function doCommandAsVerificationWithSpinner()
 {
@@ -2545,11 +6658,38 @@ function doCommandAsVerificationWithSpinner()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #   
-#   sends a CURL request
+#   Sends a CURL request, verifies the HTTP status and opens output in browser if required 
 #
 function doCurlRequest()
 {
+    # CURL command to execute
+    local COMMAND=$1
+    
     if isVerboseMode
     then 
         request_cmd=$(eval $@ -s -w "\\\\n%{http_code}")
@@ -2590,17 +6730,46 @@ function doCurlRequest()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Opens a HTML data in the default browser
 #
 function openDataInBrowser()
 {
+    # Data to open in browser 
     local DATA="$1"
     local TEMP_FILE=$__CURL_OUTPUT_FILE
     if isStringEqual $__OPEN_BROWSER "FILE"
     then 
         echo "$DATA" > $TEMP_FILE
-    elif isStringEqual $__OPEN_BROWSER "YES" || ( isStringEqual $__OPEN_BROWSER "PROMPT" && printQuestion "Do you want to open a HTML data in browser?" )
+    elif isStringEqual $__OPEN_BROWSER "YES" || ( isStringEqual $__OPEN_BROWSER "PROMPT" && printQuestion "Do you want to open a HTML data in browser?" "N" )
     then 
         echo "$DATA" > $TEMP_FILE
         doCommand see "$TEMP_FILE" 2>/dev/null
@@ -2609,12 +6778,43 @@ function openDataInBrowser()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Adds the string to the .gitignore file
 #
 function addToGitIgnored()
 {
+    # String to add to the git ignored 
     local stringToIgnore=$1
+    # <optional> path to the gitignore file 
     local gitIgnoreFilePath=$2
     
     if isStringEmpty "$gitIgnoreFilePath"
@@ -2635,24 +6835,90 @@ function addToGitIgnored()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Defines new script
 #
 function defineScript()
 {
+    # Name of the script to define 
     local NAME=$1
+    # Description of the script 
     local DESCRIPTION=$2
     
     __SCRIPT_NAME=$NAME
     __SCRIPT_DESCRIPTION=$DESCRIPTION
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Adds an argument name to the list
+#   Adds a script argument name to the list
 #
 function addArgument()
 {
+    # Name of the argument to add 
     local ARGUMENT=$1
+    # If true, the argument is set as mandatory 
     local MANDATORY=$2
     
     if isKnownArgument "$ARGUMENT"
@@ -2674,11 +6940,36 @@ function addArgument()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Verify that the argument has been added before
 #
 function verifyArgumentAdded()
 {
+    # Argument name 
     local ARGUMENT=$1
     
     if ! isKnownArgument $ARGUMENT 
@@ -2687,11 +6978,47 @@ function verifyArgumentAdded()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
-#   Verify that the argument has been added before
+#   Verify that the argument type has been added before
 #
 function verifyArgumentTypeSet()
 {
+    # Argument name 
     local ARGUMENT=$1
     
     if ! isArgumentTypeSet "$ARGUMENT"
@@ -2700,12 +7027,44 @@ function verifyArgumentTypeSet()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets CLI names for the given argument
 #
 function setArgumentNames()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Command line names, for example: -c|--config
     local CLI_NAMES=$2
     LONG_NAME=""
     SHORT_NAME=""
@@ -2736,12 +7095,48 @@ function setArgumentNames()
     __ARGUMENT_SHORT_NAMES[$ARGUMENT]=$SHORT_NAME
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets argument type
 #
 function setArgumentType()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Type of the argument 
     local TYPE=$2
     
     verifyArgumentAdded "$ARGUMENT"
@@ -2759,12 +7154,48 @@ function setArgumentType()
     __ARGUMENT_TYPES[$ARGUMENT]="$TYPE"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets argument description 
 #
 function setArgumentDescription()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Description of the argument 
     local DESCRIPTION=$2
     
     verifyArgumentAdded "$ARGUMENT"
@@ -2777,12 +7208,38 @@ function setArgumentDescription()
     __ARGUMENT_DESCRIPTIONS[$ARGUMENT]=$DESCRIPTION
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets argument supported values
 #
 function setArgumentSupportedValues()
 {
+    # Name of an argument to set the supported values for 
     local ARGUMENT=$1
+    # List of supported values seperated by space 
     local SUPPORTED_VALUES=$2
     
     verifyArgumentAdded "$ARGUMENT"
@@ -2801,12 +7258,54 @@ function setArgumentSupportedValues()
     __ARGUMENT_SUPPORTED_VALUES[$ARGUMENT]=${SUPPORTED_VALUES[*]}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets regular expression for the argument 
 #
 function setArgumentRegularExpression()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Regular expression to set for argument verification
     local REGULAR_EXPRESSION=$2
     
     verifyArgumentAdded "$ARGUMENT"
@@ -2825,12 +7324,45 @@ function setArgumentRegularExpression()
     __ARGUMENT_REGULAR_EXPRESSIONS[$ARGUMENT]=$REGULAR_EXPRESSION
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets default value for the given argument
 #
 function setArgumentDefaultValue()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Default value for this argument 
     local DEFAULT_VALUE=$2
     
     verifyArgumentAdded "$ARGUMENT"
@@ -2841,12 +7373,52 @@ function setArgumentDefaultValue()
     __ARGUMENT_DEFAULT_VALUES[$ARGUMENT]=$DEFAULT_VALUE
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets example value for default argument
 #
 function setArgumentExampleValue()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Example value to use for this argument 
     local EXAMPLE_VALUE=$2
     
     verifyArgumentAdded "$ARGUMENT"
@@ -2865,12 +7437,37 @@ function setArgumentExampleValue()
     fi
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Sets dependences for the given argument 
 #
 function setArgumentDependencies()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Dependencies for this argument to be required, for example MY_ARGUMENT=1
     local DEPENDENCIES=$2
     
     verifyArgumentAdded "$ARGUMENT"
@@ -2894,17 +7491,58 @@ function setArgumentDependencies()
     __ARGUMENT_DEPENDENCIES[$ARGUMENT]=${DEPENDENCES[*]}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Adds new command line required argument to the list
+#   
+#   This function should be used after script definition and before 
+#   parsing of the script parameters. 
+#   
+#   Parameters added by using this function are mandatory in the script
+#   and it fails if it is not given 
 #
 function addCommandLineRequiredArgument()
 {
+    # Name of the argument variable 
     local ARGUMENT=$1
+    # Name of command line argument, for example -c|--config 
     local CLI_NAMES=$2
+    # Type of the argument 
     local TYPE=$3
+    # Description of the argument to print help 
     local DESCRIPTION=$4
+    # (only if type = options) - list of supported values for this argument 
     local SUPPORTED_VALUES=$5
+    # (only if type = regex) - regular expression to use for argument validation 
     local REGULAR_EXPRESSION=$5
+    # Example value for this argument 
     local EXAMPLE_VALUE=$6
     
     addArgument "$ARGUMENT" "mandatory"
@@ -2924,21 +7562,61 @@ function addCommandLineRequiredArgument()
     setArgumentExampleValue "$ARGUMENT" "$EXAMPLE_VALUE"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Adds new command line required argument with dependences
 #       Dependences means, that the this argument is required only 
 #       if the dependences are also set to TRUE
+#   This function should be used after script definition and before 
+#   parsing of the script parameters. 
+#   
+#   Parameters added by using this function are mandatory in the script
+#   and it fails if it is not given 
 #
 function addCommandLineRequiredArgumentWithDependencies()
 {
+    # Name of the argument variable 
     local ARGUMENT=$1
+    # Name of command line argument, for example -c|--config 
     local CLI_NAMES=$2
+    # Type of the argument 
     local TYPE=$3
+    # Description of the argument to print help 
     local DESCRIPTION=$4
+    # Dependencies which makes this argument mandatory, for example MY_ARGUMENT=1
     local DEPENDENCES=$5
+    # Default value if the argument is not given 
     local DEFAULT_VALUE=$6
+    # (only if type = options) - list of supported values for this argument 
     local SUPPORTED_VALUES=$7
+    # (only if type = regex) - regular expression to use for argument validation 
     local REGULAR_EXPRESSION=$7
+    # Example value for this argument 
     local EXAMPLE_VALUE=$8
     
     addArgument "$ARGUMENT" "optional"
@@ -2959,18 +7637,70 @@ function addCommandLineRequiredArgumentWithDependencies()
     setArgumentDependencies "$ARGUMENT" "${DEPENDENCES[*]}"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Adds new command line optional argument to the list
 #
+#   This function should be used after script definition and before 
+#   parsing of the script parameters. 
+#   
+#   Parameters added by using this function are NOT mandatory in the script
+#   and it does not fail if it is not given 
+#
 function addCommandLineOptionalArgument()
 {
+    # Name of the argument variable 
     local ARGUMENT=$1
+    # Name of command line argument, for example -c|--config 
     local CLI_NAMES=$2
+    # Type of the argument 
     local TYPE=$3
+    # Description of the argument to print help 
     local DESCRIPTION=$4
+    # Default value if the argument is not given 
     local DEFAULT_VALUE=$5
+    # (only if type = options) - list of supported values for this argument 
     local SUPPORTED_VALUES=$6
+    # (only if type = regex) - regular expression to use for argument validation 
     local REGULAR_EXPRESSION=$6
+    # Example value for this argument 
     local EXAMPLE_VALUE=$7
     
     addArgument "$ARGUMENT" "optional"
@@ -2990,6 +7720,44 @@ function addCommandLineOptionalArgument()
     setArgumentExampleValue "$ARGUMENT" "$EXAMPLE_VALUE"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Prints Usage() message 
 #
@@ -3002,6 +7770,10 @@ function printUsage()
     
     for ARGUMENT in ${__ARGUMENTS[*]}
     do
+        if _isHiddenArgument "$ARGUMENT" && ! isVerboseMode
+        then 
+            continue
+        fi
         if isArgumentOptional "$ARGUMENT"
         then
             printf "["
@@ -3042,6 +7814,45 @@ function printUsage()
     printf "\033[0m\n\n"
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Prints Help() message
 #
@@ -3057,12 +7868,17 @@ function printHelp()
     
     for ARGUMENT in ${__ARGUMENTS[*]}
     do
+        if _isHiddenArgument "$ARGUMENT" && ! isVerboseMode
+        then 
+            continue;
+        fi
         LONG_NAME=$(getArgumentLongName "$ARGUMENT")
         SHORT_NAME=$(getArgumentShortName "$ARGUMENT")
         ARGUMENT_TYPE=$(getArgumentType $ARGUMENT)
         ARGUMENT_DESCRIPTION=$(addIndentationToStringOnNewLine "$(getArgumentDescription $ARGUMENT)" "                                 ")
         ARGUMENT_TYPE_DESCRIPTION=$(addIndentationToStringOnNewLine "$(getArgumentTypeDescription $ARGUMENT_TYPE)" "                                 ")
         printf "            \033[34;1m"
+        
         if isArgumentType "$ARGUMENT" "bool"
         then 
             if isStringEmpty "$SHORT_NAME"
@@ -3205,12 +8021,52 @@ function printHelp()
     exit 0
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 #   Sets value of the argument
 #
 function setArgumentValue()
 {
+    # Name of the argument 
     local ARGUMENT=$1
+    # Value to set for the argument 
     local VALUE="$2"
     verifyArgumentAdded "$ARGUMENT"
     verifyArgumentTypeSet "$ARGUMENT"
@@ -3226,6 +8082,42 @@ function setArgumentValue()
         eval $ARGUMENT="'$ESCAPED_2'"
     fi
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #
 #   Verify if all required tools are installed 
@@ -3247,11 +8139,122 @@ function verifyRequiredTools()
     done
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Enables showing of configuration at the beginning of the script,
+#
+function enableConfigurationPrinting()
+{
+    setArgumentDefaultValue __SHOW_CONFIGURATION TRUE
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+#   Disables showing of configuration at the beginning of the script,
+#
+function disableConfigurationPrinting()
+{
+    setArgumentDefaultValue __SHOW_CONFIGURATION FALSE
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #   Parses all defined command line arguments
 #
+#   It should be called as follows:
+#
+#   parseCommandLineArguments "$@"
+#
 function parseCommandLineArguments()
 {
+    # Script arguments 
+    local ARGUMENTS=$1
     for i in "$@"
     do
     case $i in
@@ -3320,7 +8323,10 @@ function parseCommandLineArguments()
     done
     
     validateDependencies
-    printConfiguration "${__ARGUMENTS[*]}"
+    if isStringEqual "$__SHOW_CONFIGURATION" "TRUE"
+    then 
+        printConfiguration "${__ARGUMENTS[*]}"
+    fi
 }
 
 __addSupportedArgumentType "int" "A type that allows only for passing integer values" "2832"
@@ -3348,10 +8354,13 @@ addRequiredTool "htpasswd" "A tool required for bcrypt password encryption" "FAL
 addRequiredTool "php" "Engine for PHP scripts." "FALSE" "sudo apt-get install -y php"
 addRequiredTool "parted" "Useful tool for managing partitions" "FALSE" "sudo apt-get install -y parted"
 addRequiredTool "jq" "A tool for parsing of JSON files" "FALSE" "sudo apt-get install -y jq"
+addRequiredTool "curl" "Very useful tool for execution of URL requests" "FALSE" "sudo apt-get install -y curl"
 
+addCommandLineOptionalArgument __SHOW_CONFIGURATION  "--show-configuration" "bool" "If set, the script shows its configuration at the beginning" "TRUE"
 addCommandLineOptionalArgument __TOOL_TO_INSTALL "--install-required-tool" "options" "You can use this option to install tool required by this script" "realpath" "${__REQUIRED_TOOLS[*]}"
 addCommandLineOptionalArgument __INSTALL_ALL_REQUIRED "--install-all-required" "bool" "You can use this argument to install all tools required by the script" "FALSE"
 addCommandLineOptionalArgument __PRINT_REQUIRED_TOOLS_LIST "--print-required-tools" "bool" "Prints list of all tools required by the script with description" "FALSE"
 addCommandLineOptionalArgument __OPEN_BROWSER "--open-browser" "options" "Allows for opening HTML data in browser" "PROMPT" "YES NO PROMPT FILE"
 addCommandLineOptionalArgument __CURL_OUTPUT_FILE "--curl-output-file" "file" "Name of output file for CURL requests" "/tmp/tmp$RANDOM.html"
 addCommandLineOptionalArgument VERBOSE "--verbose" "bool" "If the option is enabled, the script will keep printing all information from commands, otherwise it will print only the errors" "FALSE"
+addCommandLineOptionalArgument NON_INTERACTIVE "--non-interactive" "bool" "If the option is enabled, the script will not show the prompt with asking for an user input" "FALSE"

@@ -2,15 +2,25 @@
 #
 #   The script is for installation of the choco-scripts in your repository
 #
-#       VERSION: 1.0.0
+#       VERSION: 1.0.4
 #
 #
 
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-FILE_NAME=choco-scripts-latest.tar.gz
+VERSION=latest
+FILE_NAME=choco-scripts-$VERSION.tar.gz
 URL=http://release.choco-technologies.com/scripts/$FILE_NAME
-TARGET_PATH=$PROJECT_DIR/choco-scripts
-TEMPLATE_FILE_PATH=$TARGET_PATH/template.sh
+TARGET_PATH=~/.choco-scripts
+TEMPLATE_FILE_NAME=template.sh
+TEMPLATE_FILE_PATH=$TARGET_PATH/$TEMPLATE_FILE_NAME
+CREATE_CHOCO_SCRIPT_FILE_NAME=create_choco_script.sh
+CREATE_CHOCO_SCRIPT_FILE_PATH=$TARGET_PATH/$CREATE_CHOCO_SCRIPT_FILE_NAME
+CHOCO_HELP_FILE_NAME=choco_help.sh
+CHOCO_HELP_FILE_PATH=$TARGET_PATH/$CHOCO_HELP_FILE_NAME
+USER_CONFIG_PATH=~/.choco-scripts.cfg
+BASHRC_FILE_PATH=~/.bashrc
+ENTRY_SCRIPT_NAME=choco-scripts
+INSTALL_URL=https://release.choco-technologies.com/scripts/install-choco-scripts.sh
 
 if [ "$1" == "--help" ]
 then 
@@ -18,11 +28,18 @@ then
     echo "For this installation you will need only wget which you can install by using your package manager"
     echo "By default it will be installed in '$TARGET_PATH'"
     echo "Usage:"
-    echo "        $0 [target_path]"
+    echo "        $0 [target_path] [version]"
     exit 0
-elif [ ! "$1" == "" ]
-then
-    TARGET_PATH=$1
+else 
+    if [ ! "$1" == "" ]
+    then
+        TARGET_PATH=$1
+    fi
+    if [ ! "$2" == "" ]
+    then
+        VERSION=$2
+        FILE_NAME=choco-scripts-$VERSION.tar.gz
+    fi
 fi
 
 #
@@ -68,6 +85,45 @@ fi
 echo "*" > $TARGET_PATH/.gitignore
 rm $FILE_NAME
 
+echo "export CHOCO_SCRIPTS_PATH=$TARGET_PATH" > $USER_CONFIG_PATH
+echo "export CHOCO_SCRIPT_ENTRY_FILE_NAME=$ENTRY_SCRIPT_NAME" >> $USER_CONFIG_PATH
+echo "export CHOCO_SCRIPT_TEMPLATE_FILE_NAME=$TEMPLATE_FILE_NAME" >> $USER_CONFIG_PATH
+echo "export CHOCO_SCRIPT_CREATE_CHOCO_SCRIPT_FILE_NAME=$CREATE_CHOCO_SCRIPT_FILE_NAME" >> $USER_CONFIG_PATH
+echo "export CHOCO_HELP_FILE_NAME=$CHOCO_HELP_FILE_NAME" >> $USER_CONFIG_PATH
+echo "export CHOCO_SCRIPTS_VERSION=$(cat $TARGET_PATH/version)" >> $USER_CONFIG_PATH
+echo 'export PATH="$PATH:$CHOCO_SCRIPTS_PATH"' >> $USER_CONFIG_PATH
+echo "function getChocoScriptsPath()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo '   echo "$CHOCO_SCRIPTS_PATH/$CHOCO_SCRIPT_ENTRY_FILE_NAME"' >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo "function getChocoTemplatePath()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo '   echo "$CHOCO_SCRIPTS_PATH/$CHOCO_SCRIPT_TEMPLATE_FILE_NAME"' >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo "function createChocoScript()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo '   "$CHOCO_SCRIPTS_PATH/$CHOCO_SCRIPT_CREATE_CHOCO_SCRIPT_FILE_NAME" $@   ' >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo "function chocoHelp()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo '   "$CHOCO_SCRIPTS_PATH/$CHOCO_HELP_FILE_NAME" $@   ' >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo "function updateChocoScripts()" >> $USER_CONFIG_PATH
+echo "{" >> $USER_CONFIG_PATH
+echo "   wget -O - $INSTALL_URL | bash" >> $USER_CONFIG_PATH
+echo "}" >> $USER_CONFIG_PATH
+echo 'printf "\033[37;1mHello, Choco scripts are installed in version \033[35;1m$CHOCO_SCRIPTS_VERSION\033[37;1m in the path \033[35;1m$CHOCO_SCRIPTS_PATH\033[0m\n"' >> $USER_CONFIG_PATH
+echo 'printf "\033[37;1mPlease use command \033[36;1msource \$(getChocoScriptsPath)\033[37;1m to import it in your project\033[0m\n"' >> $USER_CONFIG_PATH
 
-printf "\033[32;1mCongratulations, the choco-scripts in version $(cat $TARGET_PATH/version) are now installed at $TARGET_PATH.\033[0m\n"
-echo "You can use file $TEMPLATE_FILE_PATH as a template for your scripts"
+if ! cat "$BASHRC_FILE_PATH" | grep "source $USER_CONFIG_PATH" > /dev/null 2>&1
+then 
+    echo "source $USER_CONFIG_PATH" >> $BASHRC_FILE_PATH
+fi
+
+source $USER_CONFIG_PATH
+
+printf "\033[32;1mCongratulations, the choco-scripts in version $VERSION are now installed at $TARGET_PATH\033[0m\n"
+printf "You can use file \033[37;1m$(getChocoTemplatePath)\033[0m as a template for your scripts\n"
+printf "or just call function \033[37;1mcreateChocoScript\033[0m\n"
+echo "To import choco-scripts in your script, just add: "
+printf '\033[35;1msource $(getChocoScriptsPath)\033[0m\n'

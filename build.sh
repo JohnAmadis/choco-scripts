@@ -13,6 +13,7 @@ PACKAGE_NAME=choco-scripts
 PUBLIC_DIR=$SCRIPTS_DIR
 PACKAGE_DIR=public/scripts
 VERSION_FILE=$PUBLIC_DIR/version
+INSTALL_SCRIPT_FILE_NAME=install-choco-scripts.sh
 
 #
 #   The function prepares a functions.sh script to work
@@ -43,7 +44,7 @@ function createVersionFile()
 function buildImage()
 {
     createVersionFile
-    doCommandAsStep "Building of image $IMAGE_NAME:${VERSION/V./}" docker build -t "$IMAGE_NAME:${VERSION/V./}" -f Dockerfile .
+    doCommandAsStep "Building of image $IMAGE_NAME:${VERSION/V./}" docker build -t "$IMAGE_NAME:${VERSION/V./}" --build-arg VERSION=${VERSION/V./} -f Dockerfile .
     doCommandAsStep "Tagging of image $IMAGE_NAME:${VERSION/V./} as $IMAGE_NAME:latest" docker tag "$IMAGE_NAME:${VERSION/V./}" "$IMAGE_NAME:latest"
     doCommandAsStep "Pushing of the image $IMAGE_NAME:${VERSION/V./}" docker push $IMAGE_NAME:${VERSION/V./}
     doCommandAsStep "Pushing of the image $IMAGE_NAME:latest" docker push $IMAGE_NAME:latest
@@ -74,6 +75,7 @@ function buildPackage()
     doCommandAsStep "Creating a directory $PACKAGE_DIR in the remote host" ssh $PUBLISH_URL mkdir -p $PACKAGE_DIR
     doCommandAsStep "Publishing of package $PACKAGE_FILE_NAME" scp "$PACKAGE_FILE_NAME" "$PUBLISH_URL":$PACKAGE_DIR/$PACKAGE_FILE_NAME
     doCommandAsStep "Publishing of package $LATEST_PACKAGE_FILE_NAME" scp "$PACKAGE_FILE_NAME" "$PUBLISH_URL":$PACKAGE_DIR/$LATEST_PACKAGE_FILE_NAME
+    doCommandAsStep "Publishing of installation script" scp "$INSTALL_SCRIPT_FILE_NAME" "$PUBLISH_URL":$PACKAGE_DIR/$INSTALL_SCRIPT_FILE_NAME
 }
 
 #

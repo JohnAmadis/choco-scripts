@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#       Template file for scripts that are using choco-scripts framework
+#       <SCRIPT_DESCRIPTION>
 #
 
 #
@@ -8,28 +8,44 @@
 #
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
+
 #
-#   Path to the choco-scripts directory. By default it assumes the scripts 
-#   are in the subdirectory 
-#   You can change this path to your needs, but I suggest you to use '$THIS_DIR'
-#   variable as it always contains absolute path to the directory of your script
+#   Path to the configuration file
 #
-CHOCO_SCRIPTS_DIR=$THIS_DIR/choco-scripts
+CONFIGURATION_FILE_PATH=~/.choco-scripts.cfg
+SCRIPT_DESCRIPTION=""
+
+#
+#   Verification of the choco scripts installation
+#
+if [ -f "$CONFIGURATION_FILE_PATH" ]
+then 
+    source $CONFIGURATION_FILE_PATH
+else 
+    printf "\033[31;1mChoco-Scripts are not installed for this user\033[0m\n"
+    exit 1
+fi
+
+#
+#   Information message
+#
+echo "Using choco-scripts from path $CHOCO_SCRIPTS_PATH in version $CHOCO_SCRIPTS_VERSION"
 
 #
 #   Importing of the framework main script
 #
-source $CHOCO_SCRIPTS_DIR/functions.sh
+source $(getChocoScriptsPath)
 
 #
 #   The function prepares a framework script to work
 #
 function prepareScript()
 {
-    defineScript "$0" "My hello-world script based on choco-scripts framework in version $(cat $CHOCO_SCRIPTS_DIR/version)"
+    defineScript "$0" "<SCRIPT_DESCRIPTION>"
     
-    addCommandLineOptionalArgument EXAMPLE_ARGUMENT "-s|--string" "not_empty_string" "Example argument to be parsed from command line arguments" "This is my message from command line argument"
+    <SCRIPT_ARGUMENTS>
     
+    disableConfigurationPrinting
     parseCommandLineArguments "$@"
 }
 
@@ -38,5 +54,3 @@ function prepareScript()
 #   MAIN
 #
 prepareScript "$@"
-
-echo $EXAMPLE_ARGUMENT
