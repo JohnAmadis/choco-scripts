@@ -16,7 +16,7 @@ You can use the following command to install it in your environment:
 sudo apt-get update && apt-get install -y wget
 
 # This downloads an installation script and run it 
-wget -O - https://release.choco-technologies.com/scripts/install-choco-scripts.sh | bash
+wget -O - https://raw.githubusercontent.com/JohnAmadis/choco-scripts/refs/heads/master/install-choco-scripts.sh | bash
 ```
 
 Once the scripts are installed, they are auto-loaded on bash start and you can start using it. To import it in your script, just add the following line into your project:
