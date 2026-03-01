@@ -7,9 +7,10 @@
 #
 
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+GITHUB_REPO=JohnAmadis/choco-scripts
 VERSION=latest
 FILE_NAME=choco-scripts-$VERSION.tar.gz
-URL=http://release.choco-technologies.com/scripts/$FILE_NAME
+URL=https://github.com/$GITHUB_REPO/releases/latest/download/$FILE_NAME
 TARGET_PATH=~/.choco-scripts
 TEMPLATE_FILE_NAME=template.sh
 TEMPLATE_FILE_PATH=$TARGET_PATH/$TEMPLATE_FILE_NAME
@@ -20,7 +21,7 @@ CHOCO_HELP_FILE_PATH=$TARGET_PATH/$CHOCO_HELP_FILE_NAME
 USER_CONFIG_PATH=~/.choco-scripts.cfg
 BASHRC_FILE_PATH=~/.bashrc
 ENTRY_SCRIPT_NAME=choco-scripts
-INSTALL_URL=https://release.choco-technologies.com/scripts/install-choco-scripts.sh
+INSTALL_URL=https://raw.githubusercontent.com/$GITHUB_REPO/main/install-choco-scripts.sh
 
 if [ "$1" == "--help" ]
 then 
@@ -39,6 +40,7 @@ else
     then
         VERSION=$2
         FILE_NAME=choco-scripts-$VERSION.tar.gz
+        URL=https://github.com/$GITHUB_REPO/releases/download/V.$VERSION/$FILE_NAME
     fi
 fi
 
