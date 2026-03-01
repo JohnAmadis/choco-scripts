@@ -26,7 +26,7 @@ function installChocoScripts()
     apt-get update && apt-get install -y wget
 
     # This downloads an installation script and run it 
-    wget -O - https://release.choco-technologies.com/scripts/install-choco-scripts.sh | bash
+    wget -O - https://raw.githubusercontent.com/JohnAmadis/choco-scripts/main/install-choco-scripts.sh | bash
 }
 
 #
@@ -38,7 +38,7 @@ then
 else 
     printf "\033[31;1mChoco-Scripts are not installed for this user\033[0m\n\n"
     printf "      \033[37;1mYou can find the installation instruction here: \033[0m\n"
-    printf "            \033[34;1mhttps://bitbucket.org/chocotechnologies/scripts/src/master/\033[0m\n\n"
+    printf "            \033[34;1mhttps://github.com/JohnAmadis/choco-scripts\033[0m\n\n"
 
     while true
     do
