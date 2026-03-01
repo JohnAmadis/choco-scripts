@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'V.*'
+
+jobs:
+  build-package:
+    name: Build and publish package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#V.}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create version file
+        run: echo "${{ steps.version.outputs.version }}" > public/version
+
+      - name: Build package
+        run: |
+          PACKAGE_NAME=choco-scripts
+          VERSION=${{ steps.version.outputs.version }}
+          PACKAGE_FILE_NAME="${PACKAGE_NAME}-${VERSION}.tar.gz"
+          LATEST_PACKAGE_FILE_NAME="${PACKAGE_NAME}-latest.tar.gz"
+          cd public
+          tar -czf "../${PACKAGE_FILE_NAME}" *
+          cd ..
+          cp "${PACKAGE_FILE_NAME}" "${LATEST_PACKAGE_FILE_NAME}"
+          echo "PACKAGE_FILE_NAME=${PACKAGE_FILE_NAME}" >> $GITHUB_ENV
+          echo "LATEST_PACKAGE_FILE_NAME=${LATEST_PACKAGE_FILE_NAME}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          files: |
+            ${{ env.PACKAGE_FILE_NAME }}
+            ${{ env.LATEST_PACKAGE_FILE_NAME }}
+            install-choco-scripts.sh
+
+  build-image:
+    name: Build and push Docker image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#V.}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create version file
+        run: echo "${{ steps.version.outputs.version }}" > public/version
+
+      - name: Log in to Docker Hub
+        run: docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+
+      - name: Build and push image
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          IMAGE_NAME=chocotechnologies/scripts
+          docker build -t "${IMAGE_NAME}:${VERSION}" --build-arg VERSION="${VERSION}" -f Dockerfile .
+          docker tag "${IMAGE_NAME}:${VERSION}" "${IMAGE_NAME}:latest"
+          docker push "${IMAGE_NAME}:${VERSION}"
+          docker push "${IMAGE_NAME}:latest"
