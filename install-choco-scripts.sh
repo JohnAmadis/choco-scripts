@@ -116,6 +116,8 @@ echo "   wget -O - $INSTALL_URL | bash" >> $USER_CONFIG_PATH
 echo "}" >> $USER_CONFIG_PATH
 echo 'printf "\033[37;1mHello, Choco scripts are installed in version \033[35;1m$CHOCO_SCRIPTS_VERSION\033[37;1m in the path \033[35;1m$CHOCO_SCRIPTS_PATH\033[0m\n"' >> $USER_CONFIG_PATH
 echo 'printf "\033[37;1mPlease use command \033[36;1msource \$(getChocoScriptsPath)\033[37;1m to import it in your project\033[0m\n"' >> $USER_CONFIG_PATH
+echo 'printf "\033[37;1mTo get help about framework functions, use: \033[36;1mchocoHelp --list\033[37;1m or \033[36;1mchocoHelp --search=<keyword>\033[0m\n"' >> $USER_CONFIG_PATH
+echo 'printf "\033[37;1mTo create a new script using the generator, run: \033[36;1mcreateChocoScript\033[0m\n"' >> $USER_CONFIG_PATH
 
 if ! cat "$BASHRC_FILE_PATH" | grep "source $USER_CONFIG_PATH" > /dev/null 2>&1
 then 

@@ -1,11 +1,14 @@
-![Choco-Technologies Logo](https://choco-technologies.com/Logo-Long-NoBG-Black-Small.png)
-
+<p align="center">
+  <img src="logo.svg" alt="Choco-Scripts Logo" width="150" />
+</p>
 
 # Choco-Scripts
 
-The **Choco-Scripts** is a `bash` framework that speeds up scripts development. It is very easy to install and requires only `wget` to start working. 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-You can use the following command to install it in your enviroment:
+The **Choco-Scripts** is a `bash` framework that speeds up scripts development. It is very easy to install and requires only `wget` to start working.
+
+You can use the following command to install it in your environment:
 
 
 ```bash
@@ -34,8 +37,10 @@ source $(getChocoScriptsPath)
 
 ```bash
 root@76afe4802bf7:/# bash
-Hello, Choco scripts are installed in version 1.0.5 in the path /root/.choco-scripts
+Hello, Choco scripts are installed in version 1.1.3 in the path /root/.choco-scripts
 Please use command source $(getChocoScriptsPath) to import it in your project
+To get help about framework functions, use: chocoHelp --list or chocoHelp --search=<keyword>
+To create a new script using the generator, run: createChocoScript
 root@76afe4802bf7:/#
 
 ```
@@ -219,10 +224,4 @@ root@1bb0e346438a:/# chocoHelp --function-name=getDeviceSize
 
 ## License
 
-The project is published under **MIT** license.  
-
-*Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:*
-
-*The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.*
-
-*THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*
+The project is published under **MIT** license. See the [LICENSE](LICENSE) file for details.
