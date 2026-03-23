@@ -967,6 +967,19 @@ function isVerboseMode()
 
 
 
+function isExitOnError()
+{
+    if isStringEqual "$CONTINUE_ON_ERROR" "TRUE"
+    then 
+        return 1
+    else 
+        return 0
+    fi
+}
+
+
+
+
 
 
 
@@ -6415,23 +6428,22 @@ function printAllRequiredToolsList()
 #
 function doCommand()
 {
+    local cmd=$@
     if isVerboseMode
     then 
-        eval $@
-        return $?
+        eval $cmd
+        local RESULT=$?
     else 
-        local cmd=$@
         printf "\033[31;1m"
         eval $cmd > /dev/null
         local RESULT=$?
         printf "\033[0m"
-        if [ $RESULT -eq 0 ]
-        then 
-            return 0
-        else 
-            return $RESULT
-        fi
     fi
+    if [ $RESULT -ne 0 ] && isExitOnError
+    then
+        printError "Command failed: $cmd" "TRUE"
+    fi
+    return $RESULT
 }
 
 
@@ -6479,15 +6491,19 @@ function doCommandAsStep()
     then 
         printInfo "$DESCRIPTION\n"
         eval $COMMAND
-        return $?
+        local RESULT=$?
     else 
         beginStep "$DESCRIPTION" "FALSE"
         OUTPUT=$(eval $COMMAND 2>&1)
         #eval $COMMAND
         local RESULT=$?
         finishStep $RESULT "$OUTPUT" "FALSE" "$COMMAND"
-        return $RESULT
     fi
+    if [ $RESULT -ne 0 ] && isExitOnError
+    then
+        printError "Step failed: $DESCRIPTION (command: $COMMAND)" "TRUE"
+    fi
+    return $RESULT
 }
 
 
@@ -6531,7 +6547,7 @@ function doCommandAsStepWithSpinner()
     then 
         printInfo "$DESCRIPTION\n"
         eval $COMMAND
-        return $?
+        local RESULT=$?
     else 
         beginStep "$DESCRIPTION" "TRUE"
         OUTPUT=$(eval $COMMAND 2>&1)
@@ -6539,8 +6555,12 @@ function doCommandAsStepWithSpinner()
         local RESULT=$?
         finishStep $RESULT "$OUTPUT" "TRUE" "$COMMAND"
         #echo "COMMAND=$COMMAND"
-        return $RESULT
     fi
+    if [ $RESULT -ne 0 ] && isExitOnError
+    then
+        printError "Step failed: $DESCRIPTION (command: $COMMAND)" "TRUE"
+    fi
+    return $RESULT
 }
 
 
@@ -8364,3 +8384,4 @@ addCommandLineOptionalArgument __OPEN_BROWSER "--open-browser" "options" "Allows
 addCommandLineOptionalArgument __CURL_OUTPUT_FILE "--curl-output-file" "file" "Name of output file for CURL requests" "/tmp/tmp$RANDOM.html"
 addCommandLineOptionalArgument VERBOSE "--verbose" "bool" "If the option is enabled, the script will keep printing all information from commands, otherwise it will print only the errors" "FALSE"
 addCommandLineOptionalArgument NON_INTERACTIVE "--non-interactive" "bool" "If the option is enabled, the script will not show the prompt with asking for an user input" "FALSE"
+addCommandLineOptionalArgument CONTINUE_ON_ERROR "--continue-on-error" "bool" "If the option is enabled, the script will not exit when a command executed by doCommand or doCommandAsStep fails" "FALSE"
