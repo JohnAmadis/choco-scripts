@@ -6,7 +6,12 @@ ARG VERSION=latest
 # 
 #   Release image for the scripts
 #
-FROM ubuntu:18.04
+FROM ubuntu:22.04
+
+#
+#   Disabling interactive mode
+#
+ENV DEBIAN_FRONTEND=noninteractive
 
 #
 #   Installation of wget for installation script
@@ -28,11 +33,6 @@ COPY install-choco-scripts.sh /scripts/
 #   Installation of the choco-scripts
 #
 RUN /scripts/install-choco-scripts.sh /scripts/ $VERSION
-
-#
-#   Disabling interactive mode
-#
-ENV DEBIAN_FRONTEND=noninteractive
 
 #
 #   Some installation in the packages are interactive, so we 
