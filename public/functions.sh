@@ -5025,7 +5025,6 @@ function printError()
     printf "\033[31;1m[ ERROR ] $MESSAGE\n\033[0m"
     if isStringEmpty "$FINISH_SCRIPT" || isStringEqual "$FINISH_SCRIPT" "TRUE"
     then 
-        say_loud "My master, we have a problem here: $MESSAGE"
         exit 1
     fi
 }
